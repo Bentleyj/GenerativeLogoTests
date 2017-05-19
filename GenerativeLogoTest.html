@@ -37,7 +37,15 @@
  		<input type="color" id="col2" value="#2e4852">
  		<label>3</label>
  		<input type="color" id="col3" value="#0accca">
- 		<button onclick="randomizeValues()">Randomize</button>
+ 		<p>Alpha</p>
+ 		<input type="number" id="alpha" value="0.5">
+ 		<p>
+ 		<input type="checkbox" id="fill" value="false">
+ 		Fill
+ 		</p>
+ 		<p></p>
+ 		<button onclick="randomizeValues()">Randomize Parameters</button>
+
 
 </body>
 
@@ -134,7 +142,7 @@
 		var freq1 = 7.0;
 		var freq2 = 7.0;
 		var freq3 = 7.0;
-		var numPoints = 1000.0;
+		var numPoints = 100.0;
 		var rad = 100.0;
 		var speed = 0.015;
 		var col1;
@@ -143,6 +151,10 @@
 		var lineWidth1 = 5.0;
 		var lineWidth2 = 5.0;
 		var lineWidth3 = 5.0;
+
+		var fill = false;
+
+		var alpha = 0.5;
 
 
 		var angleFacing = 0.0;
@@ -162,19 +174,25 @@
 			ctx.moveTo(points[0][0], points[0][1]);
 			points.forEach(function(point) {
 				ctx.lineTo(point[0], point[1]);
+				ctx.lineTo(point[0], point[1]);
 			});
-			ctx.lineTo(points[0][0], points[0][1]);
-			ctx.stroke();
+			if(fill == true)
+				ctx.fill();
+			else
+				ctx.stroke();
 		}
 
 		function drawScene() {
 			ctx.strokeStyle = col1;//'rgb(54, 146, 146)';
+			ctx.fillStyle = col1;
 			ctx.lineWidth = lineWidth3;
 			drawCircle(points3);
 			ctx.strokeStyle = col2;//'rgb(46, 72, 82)';
+			ctx.fillStyle = col2;
 			ctx.lineWidth = lineWidth2;
 			drawCircle(points2);
 			ctx.strokeStyle = col3;//'rgb(10, 204, 202)';
+			ctx.fillStyle = col3;
 			ctx.lineWidth = lineWidth1;
 			drawCircle(points1);
 		}
@@ -199,6 +217,10 @@
 			col1 = document.getElementById("col1").value;
 			col2 = document.getElementById("col2").value;
 			col3 = document.getElementById("col3").value;
+
+			alpha = document.getElementById("alpha").value;
+
+			fill = document.getElementById("fill").checked;
 		}
 
 		function randomizeValues() {
@@ -228,9 +250,10 @@
 			angleFacing %= 2*PI;
 			setParameters();
 			phase1 += speed;
+			ctx.globalAlpha = alpha;
 			// phase1 += 0.3;
-			// phase2 += 0.1;
-			// phase3 += 0.2;
+			phase2 -= speed;
+			phase3 += speed/2;
 			points1 = wobbleArc(cPoints1, amp1, freq1, phase1, angleFacing);//wobblePoints(cPoints1, amp, freq, phase1);
 			points2 = wobbleArc(cPoints2, amp2, freq2, phase2, angleFacing);
 			points3 = wobbleArc(cPoints3, amp3, freq3, phase3, angleFacing);
