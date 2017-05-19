@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<script type='text/javascript' src='http://hellicarstudio.com/wp-includes/js/jquery/jquery.js?ver=1.12.4'></script>
+<script type='text/javascript' src='http://hellicarstudio.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=1.4.1'></script>
+</head>
+
+<body>
+ 		<canvas id="glscreen" width="400" height="400"></canvas>
+ 		<p>Line Width</p>
+ 		<label>1</label>
+ 		<input type="number" id="lineWidth1" value="5.0">
+ 		<label>2</label>
+ 		<input type="number" id="lineWidth2" value="5.0">
+ 		<label>3</label>
+ 		<input type="number" id="lineWidth3" value="5.0">
+ 		<p>Amplitude</p>
+ 		<label>1</label>
+ 		<input type="number" id="amp1" value="7.0">
+ 		<label>2</label>
+ 		<input type="number" id="amp2" value="7.0">
+ 		<label>3</label>
+ 		<input type="number" id="amp3" value="7.0">
+ 		<p>Frequency</p>
+ 		<label>1</label>
+ 		<input type="number" id="freq1" value="7.0">
+ 		<label>2</label>
+ 		<input type="number" id="freq2" value="7.0"> 		
+ 		<label>3</label>
+ 		<input type="number" id="freq3" value="7.0">
+ 		<p>Color</p>
+ 		<label>1</label>
+ 		<input type="color" id="col1" value="#369292">
+ 		<label>2</label>
+ 		<input type="color" id="col2" value="#2e4852">
+ 		<label>3</label>
+ 		<input type="color" id="col3" value="#0accca">
+ 		<button onclick="randomizeValues()">Randomize</button>
+
+</body>
+
+ 	<script>
+ 		// grab the canvas and the gl context
+		var canvas = document.getElementById('glscreen');
+		var ctx = canvas.getContext('2d');
+		var body = document.body;
+		ctx.lineWidth = 5;
+		var PI = 3.14159;
+		var TAU = 2*PI;
+		console.log(ctx);
+
+		function CartToPol(x, y) {
+			var out;
+			out = [Math.sqrt(x*x + y*y), Math.atan2(y, x)];
+			return out;
+		}
+
+		function PolToCar(r, theta) {
+			var out;
+			out = [r*Math.cos(theta), r*Math.sin(theta)];
+			return out;
+		}
+
+		function RadToDeg(rad) {
+			return rad * 180 / PI;
+		}
+
+		function DegToRad(deg) {
+			return deg * PI / 180;
+		}
+
+		function convertPointsToCart(points) {
+			var out = [];
+			for(var i = 0; i < points.length; i++) {
+				out.push(PolToCar(points[i][0], points[i][1]));
+			}
+			return out;
+		}
+
+		function centerPoints(points) {
+			var out = [];
+			for(var i = 0; i < points.length; i++) {
+				out.push([points[i][0] + canvas.width/2, points[i][1] + canvas.height/2]);
+			}
+			return out;
+		}
+
+		function getCirclePoints(rad, numPoints) {
+			var points = [];
+			var step = 2*PI/numPoints;
+			for(var theta = 0; theta < 2*PI; theta+=step) {
+				var point = [rad, theta];
+				points.push(point);
+			}
+			return points;
+		}
+
+		function wobblePoint(point, amp, freq, phase, amount = 1.0) {
+			var newRad = point[0] + (amp * Math.sin(point[1]*freq + phase)) * amount;
+			return [newRad, point[1]];
+
+		}
+
+		function wobblePoints(points, amp, freq, phase) {
+			var out = [];
+			for(var i = 0; i < points.length; i++) {
+				var point = wobblePoint(points[i], amp,freq, phase);
+				out.push(point);
+			}
+			return out;
+		}
+
+		function wobbleArc(points, amp, freq, phase, angleTarget) {
+			var out = [];
+			for(var i = 0; i < points.length; i++) {
+				var theta = points[i][1];
+				var angleDiff = Math.abs(theta - angleTarget);
+				var distToWave = Math.min(angleDiff, TAU - angleDiff);
+				var amount = Math.pow(Math.max(1.0, distToWave), -1.0);
+				point = wobblePoint(points[i], amp, freq, phase, amount);
+				out.push(point);
+			}
+			return out;
+		}
+
+		var phase1 = 0.0;
+		var phase2 = -PI/2;
+		var phase3 = PI/2;
+		var amp1 = 5.0;
+		var amp2 = 5.0;
+		var amp3 = 5.0;
+		var freq1 = 7.0;
+		var freq2 = 7.0;
+		var freq3 = 7.0;
+		var numPoints = 1000.0;
+		var rad = 100.0;
+		var speed = 0.015;
+		var col1;
+		var col2;
+		var col3;
+		var lineWidth1 = 5.0;
+		var lineWidth2 = 5.0;
+		var lineWidth3 = 5.0;
+
+
+		var angleFacing = 0.0;
+
+		var cPoints1 = getCirclePoints(rad, numPoints);
+		var cPoints2 = getCirclePoints(rad - ctx.lineWidth/2, numPoints);
+		var cPoints3 = getCirclePoints(rad - ctx.lineWidth, numPoints);
+
+		var points1 = cPoints1;
+		var points2 = cPoints2;
+		var points3 = cPoints3;
+
+		function drawCircle(points) {
+			points = convertPointsToCart(points);
+			points = centerPoints(points);
+			ctx.beginPath();
+			ctx.moveTo(points[0][0], points[0][1]);
+			points.forEach(function(point) {
+				ctx.lineTo(point[0], point[1]);
+			});
+			ctx.lineTo(points[0][0], points[0][1]);
+			ctx.stroke();
+		}
+
+		function drawScene() {
+			ctx.strokeStyle = col1;//'rgb(54, 146, 146)';
+			ctx.lineWidth = lineWidth3;
+			drawCircle(points3);
+			ctx.strokeStyle = col2;//'rgb(46, 72, 82)';
+			ctx.lineWidth = lineWidth2;
+			drawCircle(points2);
+			ctx.strokeStyle = col3;//'rgb(10, 204, 202)';
+			ctx.lineWidth = lineWidth1;
+			drawCircle(points1);
+		}
+
+		function setParameters() {
+			// Line Widths
+			lineWidth1 = document.getElementById("lineWidth1").value;
+			lineWidth2 = document.getElementById("lineWidth2").value;
+			lineWidth3 = document.getElementById("lineWidth3").value;
+
+			// Amplitudes
+			amp1 = document.getElementById("amp1").value;
+			amp2 = document.getElementById("amp2").value;
+			amp3 = document.getElementById("amp3").value;
+
+			// Frequencies
+			freq1 = document.getElementById("freq1").value;
+			freq2 = document.getElementById("freq2").value;
+			freq3 = document.getElementById("freq3").value;
+
+			// Colors
+			col1 = document.getElementById("col1").value;
+			col2 = document.getElementById("col2").value;
+			col3 = document.getElementById("col3").value;
+		}
+
+		function randomizeValues() {
+			document.getElementById("lineWidth1").value = 1.0 + Math.random()*8.0;
+			document.getElementById("lineWidth2").value = 1.0 + Math.random()*8.0;
+			document.getElementById("lineWidth3").value = 1.0 + Math.random()*8.0;
+
+			document.getElementById("amp1").value = 0.0 + Math.random()*20.0;
+			document.getElementById("amp2").value = 0.0 + Math.random()*20.0;
+			document.getElementById("amp3").value = 0.0 + Math.random()*20.0;
+
+			var freq = 1.0 + Math.random()*14.0;
+			document.getElementById("freq1").value = parseInt(2.0 + Math.random()*7.0);
+			document.getElementById("freq2").value = parseInt(2.0 + Math.random()*7.0);
+			document.getElementById("freq3").value = parseInt(2.0 + Math.random()*7.0);
+
+			// document.getElementById("col1").value ='#'+Math.floor(Math.random()*16777215).toString(16);
+			// document.getElementById("col2").value ='#'+Math.floor(Math.random()*16777215).toString(16);
+			// document.getElementById("col3").value ='#'+Math.floor(Math.random()*16777215).toString(16);
+
+		}
+
+		function animate() {
+			ctx.fillStyle = 'rgb(255, 255, 255)'
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			angleFacing += speed;
+			angleFacing %= 2*PI;
+			setParameters();
+			phase1 += speed;
+			// phase1 += 0.3;
+			// phase2 += 0.1;
+			// phase3 += 0.2;
+			points1 = wobbleArc(cPoints1, amp1, freq1, phase1, angleFacing);//wobblePoints(cPoints1, amp, freq, phase1);
+			points2 = wobbleArc(cPoints2, amp2, freq2, phase2, angleFacing);
+			points3 = wobbleArc(cPoints3, amp3, freq3, phase3, angleFacing);
+
+			drawScene();
+
+			requestAnimationFrame(function() {
+				animate();
+			});
+		}
+
+		animate();
+	</script>
+</html>
