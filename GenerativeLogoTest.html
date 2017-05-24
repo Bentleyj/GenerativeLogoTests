@@ -30,6 +30,8 @@
  		<input type="number" id="freq2" value="7.0"> 		
  		<label>3</label>
  		<input type="number" id="freq3" value="7.0">
+ 		<p>Cohesion</p>
+ 		<input type="number" id="cohesion" value="-1.0">
  		<p>Color</p>
  		<label>1</label>
  		<input type="color" id="col1" value="#369292">
@@ -120,13 +122,13 @@
 			return out;
 		}
 
-		function wobbleArc(points, amp, freq, phase, angleTarget) {
+		function wobbleArc(points, amp, freq, phase, angleTarget, cohesion) {
 			var out = [];
 			for(var i = 0; i < points.length; i++) {
 				var theta = points[i][1];
 				var angleDiff = Math.abs(theta - angleTarget);
 				var distToWave = Math.min(angleDiff, TAU - angleDiff);
-				var amount = Math.pow(Math.max(1.0, distToWave), -1.0);
+				var amount = Math.pow(Math.max(1.0, distToWave), cohesion);
 				point = wobblePoint(points[i], amp, freq, phase, amount);
 				out.push(point);
 			}
@@ -151,10 +153,9 @@
 		var lineWidth1 = 5.0;
 		var lineWidth2 = 5.0;
 		var lineWidth3 = 5.0;
-
 		var fill = false;
-
 		var alpha = 0.5;
+		var cohesion = -1.0;
 
 
 		var angleFacing = 0.0;
@@ -221,6 +222,8 @@
 			alpha = document.getElementById("alpha").value;
 
 			fill = document.getElementById("fill").checked;
+
+			cohesion = document.getElementById("cohesion").value;
 		}
 
 		function randomizeValues() {
@@ -254,9 +257,9 @@
 			// phase1 += 0.3;
 			phase2 -= speed;
 			phase3 += speed/2;
-			points1 = wobbleArc(cPoints1, amp1, freq1, phase1, angleFacing);//wobblePoints(cPoints1, amp, freq, phase1);
-			points2 = wobbleArc(cPoints2, amp2, freq2, phase2, angleFacing);
-			points3 = wobbleArc(cPoints3, amp3, freq3, phase3, angleFacing);
+			points1 = wobbleArc(cPoints1, amp1, freq1, phase1, angleFacing, cohesion);//wobblePoints(cPoints1, amp, freq, phase1);
+			points2 = wobbleArc(cPoints2, amp2, freq2, phase2, angleFacing, cohesion);
+			points3 = wobbleArc(cPoints3, amp3, freq3, phase3, angleFacing, cohesion);
 
 			drawScene();
 
