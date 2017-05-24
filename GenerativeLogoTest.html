@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <script type='text/javascript' src='http://hellicarstudio.com/wp-includes/js/jquery/jquery.js?ver=1.12.4'></script>
 <script type='text/javascript' src='http://hellicarstudio.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=1.4.1'></script>
+<script type='text/javascript' src='canvas2svg.js'></script>
 </head>
 
 <body>
@@ -47,11 +48,9 @@
  		</p>
  		<p></p>
  		<button onclick="randomizeValues()">Randomize Parameters</button>
-
-
-</body>
-
- 	<script>
+ 		<button onclick="importCanvas()">Save Image</button>
+ 		<p></p>
+ 		 	<script>
  		// grab the canvas and the gl context
 		var canvas = document.getElementById('glscreen');
 		var ctx = canvas.getContext('2d');
@@ -107,7 +106,7 @@
 			return points;
 		}
 
-		function wobblePoint(point, amp, freq, phase, amount = 1.0) {
+		function wobblePoint(point, amp, freq, phase, amount) {
 			var newRad = point[0] + (amp * Math.sin(point[1]*freq + phase)) * amount;
 			return [newRad, point[1]];
 
@@ -116,7 +115,7 @@
 		function wobblePoints(points, amp, freq, phase) {
 			var out = [];
 			for(var i = 0; i < points.length; i++) {
-				var point = wobblePoint(points[i], amp,freq, phase);
+				var point = wobblePoint(points[i], amp,freq, phase, 1.0);
 				out.push(point);
 			}
 			return out;
@@ -133,6 +132,28 @@
 				out.push(point);
 			}
 			return out;
+		}
+
+		function downloadURI(uri, name) {
+		  var link = document.createElement("a");
+		  link.download = name;
+		  link.href = uri;
+		  document.body.appendChild(link);
+		  link.click();
+		  document.body.removeChild(link);
+		  delete link;
+		}
+
+		function importCanvas() {
+			var ctxS = new C2S(400, 400);
+
+			drawScene(ctxS);
+
+			var svg = ctxS.getSerializedSvg(true);
+
+			var svg = "data:image/svg+xml;charset=utf-8," + svg;
+
+			downloadURI(svg, "image.svg");
 		}
 
 		var phase1 = 0.0;
@@ -157,7 +178,6 @@
 		var alpha = 0.5;
 		var cohesion = -1.0;
 
-
 		var angleFacing = 0.0;
 
 		var cPoints1 = getCirclePoints(rad, numPoints);
@@ -168,34 +188,44 @@
 		var points2 = cPoints2;
 		var points3 = cPoints3;
 
-		function drawCircle(points) {
+		function drawCircle(ctx, points) {
 			points = convertPointsToCart(points);
 			points = centerPoints(points);
 			ctx.beginPath();
 			ctx.moveTo(points[0][0], points[0][1]);
-			points.forEach(function(point) {
-				ctx.lineTo(point[0], point[1]);
-				ctx.lineTo(point[0], point[1]);
-			});
+			// points.forEach(function(point) {
+			// 	ctx.lineTo(point[0], point[1]);
+			// 	ctx.lineTo(point[0], point[1]);
+			// });
+			for (i = 1; i < points.length - 2; i ++)
+			{
+				var xc = (points[i][0] + points[i + 1][0]) / 2;
+			    var yc = (points[i][1] + points[i + 1][1]) / 2;
+			    ctx.quadraticCurveTo(points[i][0], points[i][1], xc, yc);
+			}
+			// curve through the last two points
+			ctx.quadraticCurveTo(points[i][0], points[i][1], points[i+1][0],points[i+1][1]);
+			ctx.quadraticCurveTo(points[0][0], points[0][1], points[i+1][0],points[i+1][1]);
+
 			if(fill == true)
 				ctx.fill();
 			else
 				ctx.stroke();
 		}
 
-		function drawScene() {
-			ctx.strokeStyle = col1;//'rgb(54, 146, 146)';
+		function drawScene(ctx) {
+			ctx.strokeStyle = col1;
 			ctx.fillStyle = col1;
 			ctx.lineWidth = lineWidth3;
-			drawCircle(points3);
-			ctx.strokeStyle = col2;//'rgb(46, 72, 82)';
+			drawCircle(ctx, points3);
+			ctx.strokeStyle = col2;
 			ctx.fillStyle = col2;
 			ctx.lineWidth = lineWidth2;
-			drawCircle(points2);
-			ctx.strokeStyle = col3;//'rgb(10, 204, 202)';
+			drawCircle(ctx, points2);
+			ctx.strokeStyle = col3;
 			ctx.fillStyle = col3;
 			ctx.lineWidth = lineWidth1;
-			drawCircle(points1);
+			drawCircle(ctx, points1);
 		}
 
 		function setParameters() {
@@ -226,6 +256,7 @@
 			cohesion = document.getElementById("cohesion").value;
 		}
 
+
 		function randomizeValues() {
 			document.getElementById("lineWidth1").value = 1.0 + Math.random()*8.0;
 			document.getElementById("lineWidth2").value = 1.0 + Math.random()*8.0;
@@ -239,11 +270,6 @@
 			document.getElementById("freq1").value = parseInt(2.0 + Math.random()*7.0);
 			document.getElementById("freq2").value = parseInt(2.0 + Math.random()*7.0);
 			document.getElementById("freq3").value = parseInt(2.0 + Math.random()*7.0);
-
-			// document.getElementById("col1").value ='#'+Math.floor(Math.random()*16777215).toString(16);
-			// document.getElementById("col2").value ='#'+Math.floor(Math.random()*16777215).toString(16);
-			// document.getElementById("col3").value ='#'+Math.floor(Math.random()*16777215).toString(16);
-
 		}
 
 		function animate() {
@@ -254,14 +280,11 @@
 			setParameters();
 			phase1 += speed;
 			ctx.globalAlpha = alpha;
-			// phase1 += 0.3;
-			phase2 -= speed;
-			phase3 += speed/2;
 			points1 = wobbleArc(cPoints1, amp1, freq1, phase1, angleFacing, cohesion);//wobblePoints(cPoints1, amp, freq, phase1);
 			points2 = wobbleArc(cPoints2, amp2, freq2, phase2, angleFacing, cohesion);
 			points3 = wobbleArc(cPoints3, amp3, freq3, phase3, angleFacing, cohesion);
 
-			drawScene();
+			drawScene(ctx);
 
 			requestAnimationFrame(function() {
 				animate();
@@ -270,4 +293,5 @@
 
 		animate();
 	</script>
+</body>
 </html>
