@@ -205,7 +205,9 @@
 			}
 			// curve through the last two points
 			ctx.quadraticCurveTo(points[i][0], points[i][1], points[i+1][0],points[i+1][1]);
-			ctx.quadraticCurveTo(points[0][0], points[0][1], points[i+1][0],points[i+1][1]);
+			// var xc = (points[0][0] + points[1][0]) / 2;
+			// var yc = (points[0][1] + points[1][1]) / 2;
+			// ctx.quadraticCurveTo(points[0][0], points[0][1], xc, yc);
 
 			if(fill == true)
 				ctx.fill();
