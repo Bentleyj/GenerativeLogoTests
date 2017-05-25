@@ -165,7 +165,7 @@
 		var freq1 = 7.0;
 		var freq2 = 7.0;
 		var freq3 = 7.0;
-		var numPoints = 100.0;
+		var numPoints = 500.0;
 		var rad = 100.0;
 		var speed = 0.015;
 		var col1;
@@ -197,7 +197,7 @@
 			// 	ctx.lineTo(point[0], point[1]);
 			// 	ctx.lineTo(point[0], point[1]);
 			// });
-			for (i = 1; i < points.length - 2; i ++)
+			for (i = 0; i < points.length - 2; i ++)
 			{
 				var xc = (points[i][0] + points[i + 1][0]) / 2;
 			    var yc = (points[i][1] + points[i + 1][1]) / 2;
@@ -205,9 +205,13 @@
 			}
 			// curve through the last two points
 			ctx.quadraticCurveTo(points[i][0], points[i][1], points[i+1][0],points[i+1][1]);
-			// var xc = (points[0][0] + points[1][0]) / 2;
-			// var yc = (points[0][1] + points[1][1]) / 2;
-			// ctx.quadraticCurveTo(points[0][0], points[0][1], xc, yc);
+			ctx.lineTo(points[0][0],points[0][1]);
+			var xc1 = (points[points.length-2][0] + points[points.length-1][0]) / 2;
+			var yc1 = (points[points.length-2][1] + points[points.length-1][1]) / 2;
+			var xc2 = (points[0][0] + points[2][0]) / 2;
+			var yc2 = (points[0][1] + points[2][1]) / 2;
+			ctx.moveTo(xc1,yc1);
+			ctx.quadraticCurveTo(xc1,yc1,xc2,yc2);
 
 			if(fill == true)
 				ctx.fill();
@@ -282,7 +286,7 @@
 			setParameters();
 			phase1 += speed;
 			ctx.globalAlpha = alpha;
-			points1 = wobbleArc(cPoints1, amp1, freq1, phase1, angleFacing, cohesion);//wobblePoints(cPoints1, amp, freq, phase1);
+			points1 = wobbleArc(cPoints1, amp1, freq1, phase1, angleFacing, cohesion);
 			points2 = wobbleArc(cPoints2, amp2, freq2, phase2, angleFacing, cohesion);
 			points3 = wobbleArc(cPoints3, amp3, freq3, phase3, angleFacing, cohesion);
 
