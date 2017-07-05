@@ -32,9 +32,9 @@
  		<label>3</label>
  		<input type="number" id="freq3" value="7.0">
  		<p>Cohesion</p>
- 		<input type="number" id="cohesion" value="-1.0">
+ 		<input type="number" id="cohesion" value="-7.0">
  		<p>Offset</p>
- 		<input type="number" id="offset" value="1.0">
+ 		<input type="number" id="offset" value="0.0">
  		<p>Color</p>
  		<label>1</label>
  		<input type="color" id="col1" value="#369292">
@@ -43,7 +43,7 @@
  		<label>3</label>
  		<input type="color" id="col3" value="#0accca">
  		<p>Alpha</p>
- 		<input type="number" id="alpha" value="0.5">
+ 		<input type="number" id="alpha" value="1.0">
  		<p>
  		<input type="checkbox" id="fill" value="false">
  		Fill
@@ -188,8 +188,8 @@
 		var angleFacing = 0.0;
 
 		var cPoints1 = getCirclePoints(rad, numPoints);
-		var cPoints2 = getCirclePoints(rad - ctx.lineWidth/2, numPoints);
-		var cPoints3 = getCirclePoints(rad - ctx.lineWidth, numPoints);
+		var cPoints2 = getCirclePoints(rad - ctx.lineWidth*0.8, numPoints);
+		var cPoints3 = getCirclePoints(rad - ctx.lineWidth*1.5, numPoints);
 
 		var points1 = cPoints1;
 		var points2 = cPoints2;
