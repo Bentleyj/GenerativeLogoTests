@@ -9,6 +9,8 @@
 </head>
 
 <body>
+<image if="logo" src="OxEGen_logo-06.png" style="position: absolute; width: 190px;     padding-top: 140px;
+    padding-left: 105px;">
  		<canvas id="glscreen" width="400" height="400"></canvas>
  		<p>Line Width</p>
  		<label>1</label>
@@ -52,7 +54,7 @@
  		<button onclick="randomizeValues()">Randomize Parameters</button>
  		<button onclick="importCanvas()">Save Image</button>
  		<p></p>
- 		 	<script>
+ 		<script>
  		// grab the canvas and the gl context
 		var canvas = document.getElementById('glscreen');
 		var ctx = canvas.getContext('2d');
