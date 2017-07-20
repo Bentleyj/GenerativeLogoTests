@@ -9,23 +9,23 @@
 </head>
 
 <body>
-<image if="logo" src="OxEGen_logo-06.png" style="position: absolute; width: 190px;     padding-top: 140px;
-    padding-left: 105px;">
- 		<canvas id="glscreen" width="400" height="400"></canvas>
+<!-- 		<image if="logo" srclogo="OxEGen_-06.png" style="position: absolute; width: 190px;     padding-top: 140px;
+    padding-left: 105px;"> -->
+ 		<canvas id="glscreen" width="400" height="400" onclick="setPosition(event)"></canvas>
  		<p>Line Width</p>
  		<label>1</label>
- 		<input type="number" id="lineWidth1" value="5.0">
+ 		<input type="number" id="lineWidth1" value="2.0">
  		<label>2</label>
- 		<input type="number" id="lineWidth2" value="5.0">
+ 		<input type="number" id="lineWidth2" value="2.0">
  		<label>3</label>
- 		<input type="number" id="lineWidth3" value="5.0">
+ 		<input type="number" id="lineWidth3" value="2.0">
  		<p>Amplitude</p>
  		<label>1</label>
- 		<input type="number" id="amp1" value="0.1">
+ 		<input type="number" id="amp1" value="10">
  		<label>2</label>
- 		<input type="number" id="amp2" value="0.1">
+ 		<input type="number" id="amp2" value="10">
  		<label>3</label>
- 		<input type="number" id="amp3" value="0.1">
+ 		<input type="number" id="amp3" value="10">
  		<p>Frequency</p>
  		<label>1</label>
  		<input type="number" id="freq1" value="0.2">
@@ -34,7 +34,7 @@
  		<label>3</label>
  		<input type="number" id="freq3" value="0.2">
  		<p>Cohesion</p>
- 		<input type="number" id="cohesion" value="-7.0">
+ 		<input type="number" id="cohesion" value="7.0">
  		<p>Offset</p>
  		<input type="number" id="offset" value="0.0">
  		<p>Color</p>
@@ -47,8 +47,10 @@
  		<p>Alpha</p>
  		<input type="number" id="alpha" value="1.0">
  		<p>
- 		<p>Speed</p>
- 		<input type="number" id="speed" value="0.015">
+ 		<p>Phase Speed</p>
+ 		<input type="number" id="pSpeed1" value="0.1">
+ 		<input type="number" id="pSpeed2" value="0.1">
+ 		<input type="number" id="pSpeed3" value="0.1">
  		<p>
  		<input type="checkbox" id="fill" value="false">
  		Fill
@@ -58,7 +60,7 @@
  		<button onclick="importCanvas()">Save Image</button>
  		<p></p>
  		<script>
- 		// grab the canvas and the gl context
+ 		// grab the canvas and the gl ctx
 		var canvas = document.getElementById('glscreen');
 		var ctx = canvas.getContext('2d');
 		var body = document.body;
@@ -169,8 +171,8 @@
 			for(var i = 0; i < points.length; i++) {
 				var theta = points[i][1];
 				var distance = Math.abs(theta - pointTarget);
-				var distance = Math.min(distance, length - distance);
-				var amount = Math.pow(map(distance, 0.0, length, 1.0, 0.0), cohesion);//Math.pow(Math.max(1.0, distance), cohesion);
+				//var distance = Math.min(distance, length - distance);
+				var amount = Math.pow(Math.max(Math.min(map(distance, 0.0, length, 1.0, 0.0), 1.0), 0.0), cohesion);//Math.pow(Math.max(1.0, distance), cohesion);
 				point = wobblePoint(points[i], amp, freq, phase, amount);
 				out.push(point);
 			}
@@ -199,9 +201,20 @@
 			downloadURI(svg, "image.svg");
 		}
 
+		function lerp(v0, v1, t) {
+		  return (1 - t) * v0 + t * v1;
+		}
+
+		function setPosition(event) {
+			bumpTarget = event.offsetY;
+		}
+
 		var phase1 = 0.0;
 		var phase2 = -PI/2;
 		var phase3 = PI/2;
+		var pSpeed1 = 0.0;
+		var pSpeed2 = 0.0;
+		var pSpeed3 = 0.0;
 		var amp1 = 5.0;
 		var amp2 = 5.0;
 		var amp3 = 5.0;
@@ -222,7 +235,8 @@
 		var cohesion = -1.0;
 		var offset = 1.0;
 
-		var angleFacing = 0.0;
+		var bumpPosition = 0.0;
+		var bumpTarget = 0.0;
 
 		var cPoints1 = getLinePoints(length, numPoints);
 		var cPoints2 = getLinePoints(length - ctx.lineWidth*0.8, numPoints);
@@ -284,7 +298,7 @@
 			ctx.fillStyle = col1;
 			ctx.lineWidth = lineWidth1;
 			ctx.save();
-			ctx.translate(20, 20);
+			ctx.translate(200, 20);
 			drawLine(ctx, points1, (canvas.width/2) + Math.floor(offset), canvas.height/2 - Math.floor(offset));
 			ctx.strokeStyle = col2;
 			ctx.fillStyle = col2;
@@ -328,7 +342,10 @@
 
 			offset = document.getElementById("offset").value;
 
-			//speed = document.getElementById("speed").value;
+			pSpeed1 = parseFloat(document.getElementById("pSpeed1").value);
+			pSpeed2 = parseFloat(document.getElementById("pSpeed2").value);
+			pSpeed3 = parseFloat(document.getElementById("pSpeed3").value);
+
 		}
 
 		function randomizeValues() {
@@ -340,7 +357,6 @@
 			document.getElementById("amp2").value = 0.0 + Math.random()*0.1;
 			document.getElementById("amp3").value = 0.0 + Math.random()*0.1;
 
-			var freq = 1.0 + Math.random()*14.0;
 			document.getElementById("freq1").value = 0.1 + Math.random()*0.2;
 			document.getElementById("freq2").value = 0.1 + Math.random()*0.2;
 			document.getElementById("freq3").value = 0.1 + Math.random()*0.2;
@@ -349,14 +365,18 @@
 		function animate() {
 			ctx.fillStyle = 'rgb(255, 255, 255)'
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
-			angleFacing += speed;
-			angleFacing %= length;
+			//angleFacing += speed;
+			//angleFacing = event.clientX;
 			setParameters();
-			phase1 += speed;
+			phase1 += pSpeed1;
+			phase2 += pSpeed2;
+			phase3 += pSpeed3;
 			ctx.globalAlpha = alpha;
-			points1 = wobbleArea(cPoints1, amp1, freq1, 10, angleFacing, cohesion);
-			points2 = wobbleArea(cPoints2, amp2, freq2, 20, angleFacing, cohesion);
-			points3 = wobbleArea(cPoints3, amp3, freq3, 30, angleFacing, cohesion);
+			points1 = wobbleArea(cPoints1, amp1, freq1, phase1, bumpPosition, cohesion);
+			points2 = wobbleArea(cPoints2, amp2, freq2, phase2, bumpPosition, cohesion);
+			points3 = wobbleArea(cPoints3, amp3, freq3, phase3, bumpPosition, cohesion);
+
+			bumpPosition = lerp(bumpPosition, bumpTarget, 0.05);
 
 			drawScene(ctx);
 
