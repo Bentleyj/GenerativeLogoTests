@@ -21,18 +21,18 @@
  		<input type="number" id="lineWidth3" value="5.0">
  		<p>Amplitude</p>
  		<label>1</label>
- 		<input type="number" id="amp1" value="7.0">
+ 		<input type="number" id="amp1" value="0.1">
  		<label>2</label>
- 		<input type="number" id="amp2" value="7.0">
+ 		<input type="number" id="amp2" value="0.1">
  		<label>3</label>
- 		<input type="number" id="amp3" value="7.0">
+ 		<input type="number" id="amp3" value="0.1">
  		<p>Frequency</p>
  		<label>1</label>
- 		<input type="number" id="freq1" value="7.0">
+ 		<input type="number" id="freq1" value="0.2">
  		<label>2</label>
- 		<input type="number" id="freq2" value="7.0"> 		
+ 		<input type="number" id="freq2" value="0.2"> 		
  		<label>3</label>
- 		<input type="number" id="freq3" value="7.0">
+ 		<input type="number" id="freq3" value="0.2">
  		<p>Cohesion</p>
  		<input type="number" id="cohesion" value="-7.0">
  		<p>Offset</p>
@@ -46,6 +46,9 @@
  		<input type="color" id="col3" value="#0accca">
  		<p>Alpha</p>
  		<input type="number" id="alpha" value="1.0">
+ 		<p>
+ 		<p>Speed</p>
+ 		<input type="number" id="speed" value="0.015">
  		<p>
  		<input type="checkbox" id="fill" value="false">
  		Fill
@@ -63,6 +66,10 @@
 		var PI = 3.14159;
 		var TAU = 2*PI;
 		console.log(ctx);
+
+		function map(value, low1, high1, low2, high2) {
+    		return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
+		}
 
 		function CartToPol(x, y) {
 			var out;
@@ -115,21 +122,10 @@
 		}
 
 		// New for Lines
-		function getLinePointsHor(length, numPoints) {
-			var points[];
+		function getLinePoints(length, numPoints) {
+			var points = [];
 			var step = length / numPoints;
-			for(var i = 0; i < length; i + step) {
-				var point = [i, 0];
-				points.push(point);
-			}
-			return points;
-		}
-
-		// New for Lines
-		function getLinePointsVert(length, numPoints) {
-			var points[];
-			var step = length / numPoints;
-			for(var i = 0; i < length; i + step) {
+			for(var i = 0; i < length; i += step) {
 				var point = [0, i];
 				points.push(point);
 			}
@@ -139,7 +135,11 @@
 		function wobblePoint(point, amp, freq, phase, amount) {
 			var newRad = point[0] + (amp * Math.sin(point[1]*freq + phase)) * amount;
 			return [newRad, point[1]];
+		}
 
+		function wobblePointCircle(point, amp, freq, phase, amount) {
+			var newRad = point[0] + (amp * Math.sin(point[1]*freq + phase)) * amount;
+			return [newRad, point[1]];
 		}
 
 		function wobblePoints(points, amp, freq, phase) {
@@ -157,7 +157,20 @@
 				var theta = points[i][1];
 				var angleDiff = Math.abs(theta - angleTarget);
 				var distToWave = Math.min(angleDiff, TAU - angleDiff);
-				var amount = Math.pow(Math.max(1.0, distToWave), cohesion);
+				var amount = Math.pow(Math.max(1.0, distToWave), cohesion*cohesion);
+				point = wobblePoint(points[i], amp, freq, phase, amount);
+				out.push(point);
+			}
+			return out;
+		}
+
+		function wobbleArea(points, amp, freq, phase, pointTarget, cohesion) {
+			var out = [];
+			for(var i = 0; i < points.length; i++) {
+				var theta = points[i][1];
+				var distance = Math.abs(theta - pointTarget);
+				var distance = Math.min(distance, length - distance);
+				var amount = Math.pow(map(distance, 0.0, length, 1.0, 0.0), cohesion);//Math.pow(Math.max(1.0, distance), cohesion);
 				point = wobblePoint(points[i], amp, freq, phase, amount);
 				out.push(point);
 			}
@@ -196,8 +209,8 @@
 		var freq2 = 7.0;
 		var freq3 = 7.0;
 		var numPoints = 500.0;
-		var rad = 100.0;
-		var speed = 0.015;
+		var length = 400.0;
+		var speed = 0.15;
 		var col1;
 		var col2;
 		var col3;
@@ -211,9 +224,9 @@
 
 		var angleFacing = 0.0;
 
-		var cPoints1 = getCirclePoints(rad, numPoints);
-		var cPoints2 = getCirclePoints(rad - ctx.lineWidth*0.8, numPoints);
-		var cPoints3 = getCirclePoints(rad - ctx.lineWidth*1.5, numPoints);
+		var cPoints1 = getLinePoints(length, numPoints);
+		var cPoints2 = getLinePoints(length - ctx.lineWidth*0.8, numPoints);
+		var cPoints3 = getLinePoints(length - ctx.lineWidth*1.5, numPoints);
 
 		var points1 = cPoints1;
 		var points2 = cPoints2;
@@ -224,10 +237,7 @@
 			points = shiftPoints(points, centerX, centerY);
 			ctx.beginPath();
 			ctx.moveTo(points[0][0], points[0][1]);
-			// points.forEach(function(point) {
-			// 	ctx.lineTo(point[0], point[1]);
-			// 	ctx.lineTo(point[0], point[1]);
-			// });
+
 			for (i = 0; i < points.length - 2; i ++)
 			{
 				var xc = (points[i][0] + points[i + 1][0]) / 2;
@@ -250,20 +260,43 @@
 				ctx.stroke();
 		}
 
+		function drawLine(ctx, points, startX, startY) {
+			//points = convertPointsToCart(points);
+			ctx.beginPath();
+			//ctx.pushMatrix();
+			//ctx.translate(startX, startY);
+			ctx.moveTo(points[0][0], points[0][1]);
+			for (i = 0; i < points.length-1; i ++)
+			{
+				var xc = (points[i][0] + points[i + 1][0]) / 2;
+			    var yc = (points[i][1] + points[i + 1][1]) / 2;
+			    ctx.quadraticCurveTo(points[i][0], points[i][1], xc, yc);
+			}
+
+			if(fill == true)
+				ctx.fill();
+			else
+				ctx.stroke();
+		}
+
 		function drawScene(ctx) {
 			ctx.strokeStyle = col1;
 			ctx.fillStyle = col1;
 			ctx.lineWidth = lineWidth1;
-			console.log(offset);
-			drawCircle(ctx, points1, (canvas.width/2) + Math.floor(offset), canvas.height/2 - Math.floor(offset));
+			ctx.save();
+			ctx.translate(20, 20);
+			drawLine(ctx, points1, (canvas.width/2) + Math.floor(offset), canvas.height/2 - Math.floor(offset));
 			ctx.strokeStyle = col2;
 			ctx.fillStyle = col2;
 			ctx.lineWidth = lineWidth2;
-			drawCircle(ctx, points2, canvas.width/2, canvas.height/2 + Math.floor(offset));
+			ctx.translate(lineWidth2, 0);
+			drawLine(ctx, points2, canvas.width/2, canvas.height/2 + Math.floor(offset));
 			ctx.strokeStyle = col3;
 			ctx.fillStyle = col3;
 			ctx.lineWidth = lineWidth3;
-			drawCircle(ctx, points3, canvas.width/2 - Math.floor(offset), canvas.height/2 - Math.floor(offset));
+			ctx.translate(lineWidth3, 0);
+			drawLine(ctx, points3, canvas.width/2 - Math.floor(offset), canvas.height/2 - Math.floor(offset));
+			ctx.restore();
 		}
 
 		function setParameters() {
@@ -294,35 +327,36 @@
 			cohesion = document.getElementById("cohesion").value;
 
 			offset = document.getElementById("offset").value;
+
+			//speed = document.getElementById("speed").value;
 		}
 
-
 		function randomizeValues() {
-			document.getElementById("lineWidth1").value = 1.0 + Math.random()*8.0;
-			document.getElementById("lineWidth2").value = 1.0 + Math.random()*8.0;
-			document.getElementById("lineWidth3").value = 1.0 + Math.random()*8.0;
+			document.getElementById("lineWidth1").value = 1.0 + Math.random()*4.0;
+			document.getElementById("lineWidth2").value = 1.0 + Math.random()*4.0;
+			document.getElementById("lineWidth3").value = 1.0 + Math.random()*4.0;
 
-			document.getElementById("amp1").value = 0.0 + Math.random()*20.0;
-			document.getElementById("amp2").value = 0.0 + Math.random()*20.0;
-			document.getElementById("amp3").value = 0.0 + Math.random()*20.0;
+			document.getElementById("amp1").value = 0.0 + Math.random()*0.1;
+			document.getElementById("amp2").value = 0.0 + Math.random()*0.1;
+			document.getElementById("amp3").value = 0.0 + Math.random()*0.1;
 
 			var freq = 1.0 + Math.random()*14.0;
-			document.getElementById("freq1").value = parseInt(2.0 + Math.random()*7.0);
-			document.getElementById("freq2").value = parseInt(2.0 + Math.random()*7.0);
-			document.getElementById("freq3").value = parseInt(2.0 + Math.random()*7.0);
+			document.getElementById("freq1").value = 0.1 + Math.random()*0.2;
+			document.getElementById("freq2").value = 0.1 + Math.random()*0.2;
+			document.getElementById("freq3").value = 0.1 + Math.random()*0.2;
 		}
 
 		function animate() {
 			ctx.fillStyle = 'rgb(255, 255, 255)'
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
 			angleFacing += speed;
-			angleFacing %= 2*PI;
+			angleFacing %= length;
 			setParameters();
 			phase1 += speed;
 			ctx.globalAlpha = alpha;
-			points1 = cPoints1;
-			points2 = cPoints2;
-			points3 = cPoints3;
+			points1 = wobbleArea(cPoints1, amp1, freq1, 10, angleFacing, cohesion);
+			points2 = wobbleArea(cPoints2, amp2, freq2, 20, angleFacing, cohesion);
+			points3 = wobbleArea(cPoints3, amp3, freq3, 30, angleFacing, cohesion);
 
 			drawScene(ctx);
 
