@@ -114,6 +114,28 @@
 			return points;
 		}
 
+		// New for Lines
+		function getLinePointsHor(length, numPoints) {
+			var points[];
+			var step = length / numPoints;
+			for(var i = 0; i < length; i + step) {
+				var point = [i, 0];
+				points.push(point);
+			}
+			return points;
+		}
+
+		// New for Lines
+		function getLinePointsVert(length, numPoints) {
+			var points[];
+			var step = length / numPoints;
+			for(var i = 0; i < length; i + step) {
+				var point = [0, i];
+				points.push(point);
+			}
+			return points;
+		}
+
 		function wobblePoint(point, amp, freq, phase, amount) {
 			var newRad = point[0] + (amp * Math.sin(point[1]*freq + phase)) * amount;
 			return [newRad, point[1]];
@@ -298,9 +320,9 @@
 			setParameters();
 			phase1 += speed;
 			ctx.globalAlpha = alpha;
-			points1 = wobbleArc(cPoints1, amp1, freq1, phase1, angleFacing, cohesion);
-			points2 = wobbleArc(cPoints2, amp2, freq2, phase2, angleFacing, cohesion);
-			points3 = wobbleArc(cPoints3, amp3, freq3, phase3, angleFacing, cohesion);
+			points1 = cPoints1;
+			points2 = cPoints2;
+			points3 = cPoints3;
 
 			drawScene(ctx);
 
