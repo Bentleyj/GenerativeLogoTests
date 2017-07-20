@@ -39,17 +39,20 @@
  		<input type="number" id="offset" value="0.0">
  		<p>Color</p>
  		<label>1</label>
- 		<input type="color" id="col1" value="#369292">
+ 		<input type="color" id="c1" value="#369292">
  		<label>2</label>
- 		<input type="color" id="col2" value="#2e4852">
+ 		<input type="color" id="c2" value="#2e4852">
  		<label>3</label>
- 		<input type="color" id="col3" value="#0accca">
+ 		<input type="color" id="c3" value="#0accca">
  		<p>Alpha</p>
  		<input type="number" id="alpha" value="1.0">
  		<p>
  		<p>Phase Speed</p>
+ 		<label>1</label>
  		<input type="number" id="pSpeed1" value="0.1">
+  		<label>2</label>
  		<input type="number" id="pSpeed2" value="0.1">
+  		<label>3</label>
  		<input type="number" id="pSpeed3" value="0.1">
  		<p>
  		<input type="checkbox" id="fill" value="false">
@@ -65,62 +68,10 @@
 		var ctx = canvas.getContext('2d');
 		var body = document.body;
 		ctx.lineWidth = 5;
-		var PI = 3.14159;
-		var TAU = 2*PI;
 		console.log(ctx);
 
 		function map(value, low1, high1, low2, high2) {
     		return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
-		}
-
-		function CartToPol(x, y) {
-			var out;
-			out = [Math.sqrt(x*x + y*y), Math.atan2(y, x)];
-			return out;
-		}
-
-		function PolToCar(r, theta) {
-			var out;
-			out = [r*Math.cos(theta), r*Math.sin(theta)];
-			return out;
-		}
-
-		function RadToDeg(rad) {
-			return rad * 180 / PI;
-		}
-
-		function DegToRad(deg) {
-			return deg * PI / 180;
-		}
-
-		function convertPointsToCart(points) {
-			var out = [];
-			for(var i = 0; i < points.length; i++) {
-				out.push(PolToCar(points[i][0], points[i][1]));
-			}
-			return out;
-		}
-
-		function shiftPoints(points, xShift, yShift) {
-			var out = [];
-			for(var i = 0; i < points.length; i++) {
-				out.push([points[i][0] + xShift, points[i][1] + yShift]);
-			}
-			return out;
-		}
-
-		function centerPoints(points) {
-			return shiftPoints(points, canvas.width/2, canvas.height/2);
-		}
-
-		function getCirclePoints(rad, numPoints) {
-			var points = [];
-			var step = 2*PI/numPoints;
-			for(var theta = 0; theta < 2*PI; theta+=step) {
-				var point = [rad, theta];
-				points.push(point);
-			}
-			return points;
 		}
 
 		// New for Lines
@@ -137,33 +88,6 @@
 		function wobblePoint(point, amp, freq, phase, amount) {
 			var newRad = point[0] + (amp * Math.sin(point[1]*freq + phase)) * amount;
 			return [newRad, point[1]];
-		}
-
-		function wobblePointCircle(point, amp, freq, phase, amount) {
-			var newRad = point[0] + (amp * Math.sin(point[1]*freq + phase)) * amount;
-			return [newRad, point[1]];
-		}
-
-		function wobblePoints(points, amp, freq, phase) {
-			var out = [];
-			for(var i = 0; i < points.length; i++) {
-				var point = wobblePoint(points[i], amp,freq, phase, 1.0);
-				out.push(point);
-			}
-			return out;
-		}
-
-		function wobbleArc(points, amp, freq, phase, angleTarget, cohesion) {
-			var out = [];
-			for(var i = 0; i < points.length; i++) {
-				var theta = points[i][1];
-				var angleDiff = Math.abs(theta - angleTarget);
-				var distToWave = Math.min(angleDiff, TAU - angleDiff);
-				var amount = Math.pow(Math.max(1.0, distToWave), cohesion*cohesion);
-				point = wobblePoint(points[i], amp, freq, phase, amount);
-				out.push(point);
-			}
-			return out;
 		}
 
 		function wobbleArea(points, amp, freq, phase, pointTarget, cohesion) {
@@ -209,82 +133,40 @@
 			bumpTarget = event.offsetY;
 		}
 
-		var phase1 = 0.0;
-		var phase2 = -PI/2;
-		var phase3 = PI/2;
-		var pSpeed1 = 0.0;
-		var pSpeed2 = 0.0;
-		var pSpeed3 = 0.0;
-		var amp1 = 5.0;
-		var amp2 = 5.0;
-		var amp3 = 5.0;
-		var freq1 = 7.0;
-		var freq2 = 7.0;
-		var freq3 = 7.0;
+		var phase = [0.0, -Math.PI/2, Math.PI/2];
+		var pSpeed = [0.0, 0.0, 0.0];
+		var amp = [5.0, 5.0, 5.0];
+		freq = [7.0, 7.0, 7.0];
 		var numPoints = 500.0;
 		var length = 400.0;
 		var speed = 0.15;
-		var col1;
-		var col2;
-		var col3;
-		var lineWidth1 = 5.0;
-		var lineWidth2 = 5.0;
-		var lineWidth3 = 5.0;
+		var col = [];
+		var lineWidth = [2.0, 2.0, 2.0];
 		var fill = false;
 		var alpha = 0.5;
-		var cohesion = -1.0;
+		var cohesion = 30.0;
 		var offset = 1.0;
 
 		var bumpPosition = 0.0;
 		var bumpTarget = 0.0;
 
-		var cPoints1 = getLinePoints(length, numPoints);
-		var cPoints2 = getLinePoints(length - ctx.lineWidth*0.8, numPoints);
-		var cPoints3 = getLinePoints(length - ctx.lineWidth*1.5, numPoints);
+		var cPoints = [];
+		cPoints[0] = getLinePoints(length, numPoints);
+		cPoints[1] = getLinePoints(length - ctx.lineWidth*0.8, numPoints);
+		cPoints[2] = getLinePoints(length - ctx.lineWidth*1.5, numPoints);
 
-		var points1 = cPoints1;
-		var points2 = cPoints2;
-		var points3 = cPoints3;
+		points1 = cPoints[0]; //.push(cPoints[0]);
+		points2 = cPoints[1]; //points.push(cPoints[1]);
+		points3 = cPoints[2]; //points.push(cPoints[2]);
 
-		function drawCircle(ctx, points, centerX, centerY) {
-			points = convertPointsToCart(points);
-			points = shiftPoints(points, centerX, centerY);
+		function drawLine(ctx, p) {
 			ctx.beginPath();
-			ctx.moveTo(points[0][0], points[0][1]);
-
-			for (i = 0; i < points.length - 2; i ++)
+			ctx.moveTo(p[0][0], p[0][1]);
+			for (i = 0; i < p.length-1; i ++)
 			{
-				var xc = (points[i][0] + points[i + 1][0]) / 2;
-			    var yc = (points[i][1] + points[i + 1][1]) / 2;
-			    ctx.quadraticCurveTo(points[i][0], points[i][1], xc, yc);
-			}
-			// curve through the last two points
-			ctx.quadraticCurveTo(points[i][0], points[i][1], points[i+1][0],points[i+1][1]);
-			ctx.lineTo(points[0][0],points[0][1]);
-			var xc1 = (points[points.length-2][0] + points[points.length-1][0]) / 2;
-			var yc1 = (points[points.length-2][1] + points[points.length-1][1]) / 2;
-			var xc2 = (points[0][0] + points[2][0]) / 2;
-			var yc2 = (points[0][1] + points[2][1]) / 2;
-			ctx.moveTo(xc1,yc1);
-			ctx.quadraticCurveTo(xc1,yc1,xc2,yc2);
-
-			if(fill == true)
-				ctx.fill();
-			else
-				ctx.stroke();
-		}
-
-		function drawLine(ctx, points, startX, startY) {
-			//points = convertPointsToCart(points);
-			ctx.beginPath();
-			//ctx.pushMatrix();
-			//ctx.translate(startX, startY);
-			ctx.moveTo(points[0][0], points[0][1]);
-			for (i = 0; i < points.length-1; i ++)
-			{
-				var xc = (points[i][0] + points[i + 1][0]) / 2;
-			    var yc = (points[i][1] + points[i + 1][1]) / 2;
-			    ctx.quadraticCurveTo(points[i][0], points[i][1], xc, yc);
+				var xc = (p[i][0] + p[i + 1][0]) / 2;
+			    var yc = (p[i][1] + p[i + 1][1]) / 2;
+			    ctx.quadraticCurveTo(p[i][0], p[i][1], xc, yc);
 			}
 
 			if(fill == true)
@@ -294,45 +176,45 @@
 		}
 
 		function drawScene(ctx) {
-			ctx.strokeStyle = col1;
-			ctx.fillStyle = col1;
-			ctx.lineWidth = lineWidth1;
+			ctx.strokeStyle = col[0];
+			ctx.fillStyle = col[0];
+			ctx.lineWidth = lineWidth[0];
 			ctx.save();
 			ctx.translate(200, 20);
-			drawLine(ctx, points1, (canvas.width/2) + Math.floor(offset), canvas.height/2 - Math.floor(offset));
-			ctx.strokeStyle = col2;
-			ctx.fillStyle = col2;
-			ctx.lineWidth = lineWidth2;
-			ctx.translate(lineWidth2, 0);
-			drawLine(ctx, points2, canvas.width/2, canvas.height/2 + Math.floor(offset));
-			ctx.strokeStyle = col3;
-			ctx.fillStyle = col3;
-			ctx.lineWidth = lineWidth3;
-			ctx.translate(lineWidth3, 0);
-			drawLine(ctx, points3, canvas.width/2 - Math.floor(offset), canvas.height/2 - Math.floor(offset));
+			drawLine(ctx, points1);
+			ctx.strokeStyle = col[1];
+			ctx.fillStyle = col[1];
+			ctx.lineWidth = lineWidth[1];
+			ctx.translate(lineWidth[1], 0);
+			drawLine(ctx, points2);
+			ctx.strokeStyle = col[2];
+			ctx.fillStyle = col[2];
+			ctx.lineWidth = lineWidth[2];
+			ctx.translate(lineWidth[2], 0);
+			drawLine(ctx, points3);
 			ctx.restore();
 		}
 
 		function setParameters() {
 			// Line Widths
-			lineWidth1 = document.getElementById("lineWidth1").value;
-			lineWidth2 = document.getElementById("lineWidth2").value;
-			lineWidth3 = document.getElementById("lineWidth3").value;
+			lineWidth[0] = document.getElementById("lineWidth1").value;
+			lineWidth[1] = document.getElementById("lineWidth2").value;
+			lineWidth[2] = document.getElementById("lineWidth3").value;
 
 			// Amplitudes
-			amp1 = document.getElementById("amp1").value;
-			amp2 = document.getElementById("amp2").value;
-			amp3 = document.getElementById("amp3").value;
+			amp[0] = document.getElementById("amp1").value;
+			amp[1] = document.getElementById("amp2").value;
+			amp[2] = document.getElementById("amp3").value;
 
 			// Frequencies
-			freq1 = document.getElementById("freq1").value;
-			freq2 = document.getElementById("freq2").value;
-			freq3 = document.getElementById("freq3").value;
+			freq[0] = document.getElementById("freq1").value;
+			freq[1] = document.getElementById("freq2").value;
+			freq[2] = document.getElementById("freq3").value;
 
 			// Colors
-			col1 = document.getElementById("col1").value;
-			col2 = document.getElementById("col2").value;
-			col3 = document.getElementById("col3").value;
+			col[0] = document.getElementById("c1").value;
+			col[1] = document.getElementById("c2").value;
+			col[2] = document.getElementById("c3").value;
 
 			alpha = document.getElementById("alpha").value;
 
@@ -342,9 +224,9 @@
 
 			offset = document.getElementById("offset").value;
 
-			pSpeed1 = parseFloat(document.getElementById("pSpeed1").value);
-			pSpeed2 = parseFloat(document.getElementById("pSpeed2").value);
-			pSpeed3 = parseFloat(document.getElementById("pSpeed3").value);
+			pSpeed[0] = parseFloat(document.getElementById("pSpeed1").value);
+			pSpeed[1] = parseFloat(document.getElementById("pSpeed2").value);
+			pSpeed[2] = parseFloat(document.getElementById("pSpeed3").value);
 
 		}
 
@@ -368,13 +250,13 @@
 			//angleFacing += speed;
 			//angleFacing = event.clientX;
 			setParameters();
-			phase1 += pSpeed1;
-			phase2 += pSpeed2;
-			phase3 += pSpeed3;
+			phase[0] += pSpeed[0];
+			phase[1] += pSpeed[1];
+			phase[2] += pSpeed[2];
 			ctx.globalAlpha = alpha;
-			points1 = wobbleArea(cPoints1, amp1, freq1, phase1, bumpPosition, cohesion);
-			points2 = wobbleArea(cPoints2, amp2, freq2, phase2, bumpPosition, cohesion);
-			points3 = wobbleArea(cPoints3, amp3, freq3, phase3, bumpPosition, cohesion);
+			points1 = wobbleArea(cPoints[0], amp[0], freq[0], phase[0], bumpPosition, cohesion);
+			points2 = wobbleArea(cPoints[1], amp[1], freq[1], phase[1], bumpPosition, cohesion);
+			points3 = wobbleArea(cPoints[2], amp[2], freq[2], phase[2], bumpPosition, cohesion);
 
 			bumpPosition = lerp(bumpPosition, bumpTarget, 0.05);
 
