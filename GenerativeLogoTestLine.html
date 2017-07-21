@@ -75,29 +75,41 @@
 		}
 
 		// New for Lines
-		function getLinePoints(length, numPoints) {
+		function getLinePoints(start, end, numPoints) {
 			var points = [];
+			var m = (end[1] - start[1]) / (end[0] - start[0]);
+			var b = start[1] - m * start[0];
+			var xDiff = end[0] - start[0];
+			var yDiff = end[1] - start[1];
+			var length = Math.sqrt(xDiff*xDiff + yDiff*yDiff);
 			var step = length / numPoints;
-			for(var i = 0; i < length; i += step) {
-				var point = [0, i];
+			for(var x = start[0]; x < end[0]; x += step) {
+				var point = [x, m * x + b];
 				points.push(point);
 			}
 			return points;
 		}
 
-		function wobblePoint(point, amp, freq, phase, amount) {
-			var newRad = point[0] + (amp * Math.sin(point[1]*freq + phase)) * amount;
-			return [newRad, point[1]];
+		function wobblePoint(point, amp, freq, phase, amount, v) {
+			var yOffset = (amp * Math.sin(point[0]*freq + phase)) * amount * v[1];
+			var xOffset = (amp * Math.sin(point[1]*freq + phase)) * amount * v[0];
+			return [point[0] + xOffset, point[1] + yOffset];
 		}
 
 		function wobbleArea(points, amp, freq, phase, pointTarget, cohesion) {
 			var out = [];
+			var v = [points[points.length - 1][0] - points[0][0], points[points.length - 1][1] -  points[0][1]];
+			v = [-v[1], v[0]];
+			var l = Math.sqrt((v[0] * v[0]) + (v[1] * v[1]));
+			v[0] /= l;
+			v[1] /= l; 
+			console.log(v);
 			for(var i = 0; i < points.length; i++) {
 				var theta = points[i][1];
 				var distance = Math.abs(theta - pointTarget);
 				//var distance = Math.min(distance, length - distance);
 				var amount = Math.pow(Math.max(Math.min(map(distance, 0.0, length, 1.0, 0.0), 1.0), 0.0), cohesion);//Math.pow(Math.max(1.0, distance), cohesion);
-				point = wobblePoint(points[i], amp, freq, phase, amount);
+				point = wobblePoint(points[i], amp, freq, phase, amount, v);
 				out.push(point);
 			}
 			return out;
@@ -151,13 +163,22 @@
 		var bumpTarget = 0.0;
 
 		var cPoints = [];
-		cPoints[0] = getLinePoints(length, numPoints);
-		cPoints[1] = getLinePoints(length - ctx.lineWidth*0.8, numPoints);
-		cPoints[2] = getLinePoints(length - ctx.lineWidth*1.5, numPoints);
+		var start = [10, 10];
+		var end = [500, 500];
+		cPoints = setupLines(start, end);
 
-		points1 = cPoints[0]; //.push(cPoints[0]);
-		points2 = cPoints[1]; //points.push(cPoints[1]);
-		points3 = cPoints[2]; //points.push(cPoints[2]);
+		var points = [];
+		for(var i = 0; i < cPoints.length; i++) {
+			points[i] = cPoints[i];
+		}
+
+		function setupLines(start, end) {
+			var p = []
+			p[0] = getLinePoints(start, end, numPoints);
+			p[1] = getLinePoints(start, end, numPoints);
+			p[2] = getLinePoints(start, end, numPoints);
+			return p;
+		}
 
 		function drawLine(ctx, p) {
 			ctx.beginPath();
@@ -175,23 +196,18 @@
 				ctx.stroke();
 		}
 
+		function drawColoredLine(ctx, i) {
+			ctx.strokeStyle = col[i];
+			ctx.fillStyle = col[i];
+			ctx.lineWidth = lineWidth[i];
+			drawLine(ctx, points[i]);
+		}
+
 		function drawScene(ctx) {
-			ctx.strokeStyle = col[0];
-			ctx.fillStyle = col[0];
-			ctx.lineWidth = lineWidth[0];
 			ctx.save();
-			ctx.translate(200, 20);
-			drawLine(ctx, points1);
-			ctx.strokeStyle = col[1];
-			ctx.fillStyle = col[1];
-			ctx.lineWidth = lineWidth[1];
-			ctx.translate(lineWidth[1], 0);
-			drawLine(ctx, points2);
-			ctx.strokeStyle = col[2];
-			ctx.fillStyle = col[2];
-			ctx.lineWidth = lineWidth[2];
-			ctx.translate(lineWidth[2], 0);
-			drawLine(ctx, points3);
+			for(var i = 0; i < points.length; i++) {
+				drawColoredLine(ctx, i);
+			}
 			ctx.restore();
 		}
 
@@ -250,13 +266,11 @@
 			//angleFacing += speed;
 			//angleFacing = event.clientX;
 			setParameters();
-			phase[0] += pSpeed[0];
-			phase[1] += pSpeed[1];
-			phase[2] += pSpeed[2];
 			ctx.globalAlpha = alpha;
-			points1 = wobbleArea(cPoints[0], amp[0], freq[0], phase[0], bumpPosition, cohesion);
-			points2 = wobbleArea(cPoints[1], amp[1], freq[1], phase[1], bumpPosition, cohesion);
-			points3 = wobbleArea(cPoints[2], amp[2], freq[2], phase[2], bumpPosition, cohesion);
+			for(var i = 0; i < points.length; i++) {
+				phase[i] += pSpeed[i%3];
+				points[i] = wobbleArea(cPoints[i], amp[i%3], freq[i%3], phase[i%3], bumpPosition, cohesion);
+			}
 
 			bumpPosition = lerp(bumpPosition, bumpTarget, 0.05);
 
