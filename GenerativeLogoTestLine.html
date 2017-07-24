@@ -34,7 +34,7 @@
  		<label>3</label>
  		<input type="number" id="freq3" value="0.2">
  		<p>Cohesion</p>
- 		<input type="number" id="cohesion" value="7.0">
+ 		<input type="number" id="cohesion" value="30.0">
  		<p>Offset</p>
  		<input type="number" id="offset" value="0.0">
  		<p>Color</p>
@@ -46,6 +46,9 @@
  		<input type="color" id="c3" value="#0accca">
  		<p>Alpha</p>
  		<input type="number" id="alpha" value="1.0">
+ 		<p>
+ 		<p>Rotation</p>
+ 		<input type="number" id="rotation" value="0.0">
  		<p>
  		<p>Phase Speed</p>
  		<label>1</label>
@@ -69,6 +72,34 @@
 		var body = document.body;
 		ctx.lineWidth = 5;
 		console.log(ctx);
+
+		var phase = [0.0, -Math.PI/2, Math.PI/2];
+		var pSpeed = [0.0, 0.0, 0.0];
+		var amp = [5.0, 5.0, 5.0];
+		freq = [7.0, 7.0, 7.0];
+		var numPoints = 500.0;
+		var length = 400.0;
+		var speed = 0.15;
+		var col = [];
+		var lineWidth = [2.0, 2.0, 2.0];
+		var fill = false;
+		var alpha = 0.5;
+		var cohesion = 30.0;
+		var offset = 1.0;
+		var rotation = 0.0;
+
+		var bumpPosition = 0.0;
+		var bumpTarget = 0.0;
+
+		var cPoints = [];
+		cPoints[0] = getLinePoints(length, numPoints);
+		cPoints[1] = getLinePoints(length - ctx.lineWidth*0.8, numPoints);
+		cPoints[2] = getLinePoints(length - ctx.lineWidth*1.5, numPoints);
+
+		var points = [];
+		points[0] = cPoints[0]; //.push(cPoints[0]);
+		points[1] = cPoints[1]; //points.push(cPoints[1]);
+		points[2] = cPoints[2]; //points.push(cPoints[2]);
 
 		function map(value, low1, high1, low2, high2) {
     		return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
@@ -133,32 +164,6 @@
 			bumpTarget = event.offsetY;
 		}
 
-		var phase = [0.0, -Math.PI/2, Math.PI/2];
-		var pSpeed = [0.0, 0.0, 0.0];
-		var amp = [5.0, 5.0, 5.0];
-		freq = [7.0, 7.0, 7.0];
-		var numPoints = 500.0;
-		var length = 400.0;
-		var speed = 0.15;
-		var col = [];
-		var lineWidth = [2.0, 2.0, 2.0];
-		var fill = false;
-		var alpha = 0.5;
-		var cohesion = 30.0;
-		var offset = 1.0;
-
-		var bumpPosition = 0.0;
-		var bumpTarget = 0.0;
-
-		var cPoints = [];
-		cPoints[0] = getLinePoints(length, numPoints);
-		cPoints[1] = getLinePoints(length - ctx.lineWidth*0.8, numPoints);
-		cPoints[2] = getLinePoints(length - ctx.lineWidth*1.5, numPoints);
-
-		points1 = cPoints[0]; //.push(cPoints[0]);
-		points2 = cPoints[1]; //points.push(cPoints[1]);
-		points3 = cPoints[2]; //points.push(cPoints[2]);
-
 		function drawLine(ctx, p) {
 			ctx.beginPath();
 			ctx.moveTo(p[0][0], p[0][1]);
@@ -176,23 +181,21 @@
 		}
 
 		function drawScene(ctx) {
-			ctx.strokeStyle = col[0];
-			ctx.fillStyle = col[0];
-			ctx.lineWidth = lineWidth[0];
 			ctx.save();
 			ctx.translate(200, 20);
-			drawLine(ctx, points1);
-			ctx.strokeStyle = col[1];
-			ctx.fillStyle = col[1];
-			ctx.lineWidth = lineWidth[1];
+			drawStyledLine(ctx, 0);
 			ctx.translate(lineWidth[1], 0);
-			drawLine(ctx, points2);
-			ctx.strokeStyle = col[2];
-			ctx.fillStyle = col[2];
-			ctx.lineWidth = lineWidth[2];
+			drawStyledLine(ctx, 1);
 			ctx.translate(lineWidth[2], 0);
-			drawLine(ctx, points3);
+			drawStyledLine(ctx, 2);
 			ctx.restore();
+		}
+
+		function drawStyledLine(ctx, i) {
+			ctx.strokeStyle = col[i];
+			ctx.fillStyle = col[i];
+			ctx.lineWidth = lineWidth[i];
+			drawLine(ctx, points[i]);
 		}
 
 		function setParameters() {
@@ -220,13 +223,15 @@
 
 			fill = document.getElementById("fill").checked;
 
-			cohesion = document.getElementById("cohesion").value;
+			cohesion =  parseFloat(document.getElementById("cohesion").value);
 
 			offset = document.getElementById("offset").value;
 
 			pSpeed[0] = parseFloat(document.getElementById("pSpeed1").value);
 			pSpeed[1] = parseFloat(document.getElementById("pSpeed2").value);
 			pSpeed[2] = parseFloat(document.getElementById("pSpeed3").value);
+
+			rotation = parseFloat(document.getElementById("rotation").value);
 
 		}
 
@@ -250,17 +255,19 @@
 			//angleFacing += speed;
 			//angleFacing = event.clientX;
 			setParameters();
-			phase[0] += pSpeed[0];
-			phase[1] += pSpeed[1];
-			phase[2] += pSpeed[2];
 			ctx.globalAlpha = alpha;
-			points1 = wobbleArea(cPoints[0], amp[0], freq[0], phase[0], bumpPosition, cohesion);
-			points2 = wobbleArea(cPoints[1], amp[1], freq[1], phase[1], bumpPosition, cohesion);
-			points3 = wobbleArea(cPoints[2], amp[2], freq[2], phase[2], bumpPosition, cohesion);
+			for(var i = 0; i < 3; i++) {
+				phase[i] += pSpeed[i];
+				points[i] = wobbleArea(cPoints[i], amp[i], freq[i], phase[i], bumpPosition, cohesion);
+			}
 
 			bumpPosition = lerp(bumpPosition, bumpTarget, 0.05);
-
+			ctx.save();
+			ctx.translate(canvas.width/2, canvas.height/2);
+			ctx.rotate(rotation * Math.PI/180);
+			ctx.translate(-canvas.width/2, -canvas.height/2);
 			drawScene(ctx);
+			ctx.restore();
 
 			requestAnimationFrame(function() {
 				animate();
