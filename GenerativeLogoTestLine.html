@@ -161,7 +161,12 @@
 		}
 
 		function setPosition(event) {
-			bumpTarget = event.offsetY;
+			var angle = -rotation * Math.PI / 180.0;
+			var x = Math.cos(angle) * (event.offsetX-ctx.canvas.clientWidth/2) - Math.sin(angle) * (event.offsetY - ctx.canvas.clientHeight/2) + ctx.canvas.clientWidth/2;
+			var y = Math.sin(angle) * (event.offsetX-ctx.canvas.clientWidth/2) + Math.cos(angle) * (event.offsetY - ctx.canvas.clientHeight/2) + ctx.canvas.clientHeight/2;
+			console.log(x);
+			console.log(y);
+			bumpTarget = y;
 		}
 
 		function drawLine(ctx, p) {
