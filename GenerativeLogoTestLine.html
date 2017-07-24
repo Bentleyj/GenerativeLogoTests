@@ -46,10 +46,10 @@
  		<input type="color" id="c3" value="#0accca">
  		<p>Alpha</p>
  		<input type="number" id="alpha" value="1.0">
- 		<p>
  		<p>Rotation</p>
  		<input type="number" id="rotation" value="0.0">
- 		<p>
+ 		<p>Speed</p>
+ 		<input type="number" id="speed" value="0.0">
  		<p>Phase Speed</p>
  		<label>1</label>
  		<input type="number" id="pSpeed1" value="0.1">
@@ -183,11 +183,15 @@
 		function drawScene(ctx) {
 			ctx.save();
 			ctx.translate(200, 20);
+			ctx.save();
+			ctx.translate(-offset, 0);
 			drawStyledLine(ctx, 0);
-			ctx.translate(lineWidth[1], 0);
+			ctx.restore();
 			drawStyledLine(ctx, 1);
-			ctx.translate(lineWidth[2], 0);
+			ctx.save();
+			ctx.translate(offset, 0);
 			drawStyledLine(ctx, 2);
+			ctx.restore();
 			ctx.restore();
 		}
 
@@ -233,6 +237,8 @@
 
 			rotation = parseFloat(document.getElementById("rotation").value);
 
+			speed = parseFloat(document.getElementById("speed").value);
+
 		}
 
 		function randomizeValues() {
@@ -252,6 +258,14 @@
 		function animate() {
 			ctx.fillStyle = 'rgb(255, 255, 255)'
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			bumpTarget += speed;
+			if(bumpPosition > ctx.canvas.clientHeight) {
+				bumpTarget = 0;
+				bumpPosition = 0;
+			} else if(bumpPosition < 0) {
+				bumpTarget = 0;
+				bumpPosition = 0;
+			}
 			//angleFacing += speed;
 			//angleFacing = event.clientX;
 			setParameters();
