@@ -13,27 +13,30 @@
     padding-left: 105px;"> -->
  		<canvas id="glscreen" width="400" height="400"></canvas>
  		<p>Color</p>
+ 		<label>Background</label>
+ 		<input type="color" id="bg" value="#ff0000">
+ 		<p></p>
  		<label>1</label>
- 		<input type="color" id="col1" value="#369292">
+ 		<input type="color" id="col1" value="#ff0000">
  		<label>2</label>
- 		<input type="color" id="col2" value="#2e4852">
+ 		<input type="color" id="col2" value="#ff0000">
  		<label>3</label>
- 		<input type="color" id="col3" value="#0accca">
+ 		<input type="color" id="col3" value="#ff0000">
  		<label>4</label>
- 		<input type="color" id="col4" value="#0accca">
+ 		<input type="color" id="col4" value="#ff0000">
  		<label>5</label>
- 		<input type="color" id="col5" value="#0accca">
+ 		<input type="color" id="col5" value="#ff0000">
  		<p></p>
  		<label>6</label>
- 		<input type="color" id="col6" value="#369292">
+ 		<input type="color" id="col6" value="#ff0000">
  		<label>7</label>
- 		<input type="color" id="col7" value="#2e4852">
+ 		<input type="color" id="col7" value="#ff0000">
  		<label>8</label>
- 		<input type="color" id="col8" value="#0accca">
+ 		<input type="color" id="col8" value="#ff0000">
  		<label>9</label>
- 		<input type="color" id="col9" value="#0accca">
+ 		<input type="color" id="col9" value="#ff0000">
  		<label>10</label>
- 		<input type="color" id="col10" value="#0accca">
+ 		<input type="color" id="col10" value="#ff0000">
  		<p></p>
  		<button onclick="randomizeValues()">Randomize Parameters</button>
  		<button onclick="importCanvas()">Save Image</button>
@@ -56,6 +59,7 @@
   		#endif
 
   		// Uniform for the resolution of the CANVAS! (not the screen) and normalized mouse position
+  		uniform vec3 u_background;
   		uniform vec2 u_points[10];
   		uniform vec3 u_colors[10];
   		void main() {
@@ -70,12 +74,12 @@
 
   			for(int i = 0; i < 10; i++) {
   				float d = distance(u_points[i], uv);
-  				float p = 1.0 - smoothstep(0.0, 0.5, d);
+  				float p = clamp(1.0 - smoothstep(0.0, 0.5, d), 0.0, 1.0);
   				percentages[i] = p;
   			}
 
     		//Calculate the background gradient along y using basic mix function
-    		vec4 background = vec4(0.75, 0.68, 0.05, 1.0);
+    		vec4 background = vec4(u_background, 1.0);
     		for(int i = 0; i < 10; i++) {
     			background.rgb = mix(background.rgb, u_colors[i], percentages[i]);
     		}
@@ -109,6 +113,7 @@
 		var velocities = getRandomArray(-0.002, 0.002, 20);
 		var points = getRandomArray(0.0, 1.0, 20);
 		var colors = new Array();
+		var background = new Array();
 
 		gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
@@ -207,11 +212,17 @@
 			cols[7] = document.getElementById("col8").value;
 			cols[8] = document.getElementById("col9").value;
 			cols[9] = document.getElementById("col10").value;
-			for(var i = 0; i < cols.length; i+=3) {
-				colors[i  ] = hexToRgb(cols[i]).r / 255;
-				colors[i+1] = hexToRgb(cols[i]).g / 255;
-				colors[i+2] = hexToRgb(cols[i]).b / 255;
+			var j = 0;
+			for(var i = 0; i < cols.length; i++) {
+				colors[j  ] = hexToRgb(cols[i]).r / 255;
+				colors[j+1] = hexToRgb(cols[i]).g / 255;
+				colors[j+2] = hexToRgb(cols[i]).b / 255;
+				j+=3;
 			}
+			var bg = document.getElementById("bg").value;
+			background[0] = hexToRgb(bg).r / 255;
+			background[1] = hexToRgb(bg).g / 255;
+			background[2] = hexToRgb(bg).b / 255;
 		}
 
 		function animate() {
@@ -228,13 +239,13 @@
 
 			//set fragment shader uniform
 			var pointsLoc = gl.getUniformLocation(program, "u_points");
-			//var mouseX = 0.5;
-			//var mouseY = 0.5;
-			//mouseY = 1.0 - mouseY; // flip mouse y because it comes in upside down for the shader coordinate space.
 			gl.uniform2fv(pointsLoc, points);
 
 			var colorsLoc = gl.getUniformLocation(program, "u_colors");
 			gl.uniform3fv(colorsLoc, colors);
+
+			var backgroundLoc = gl.getUniformLocation(program, "u_background");
+			gl.uniform3fv(backgroundLoc, background);
 
 			//draw the triangles with the shaders!
 			gl.drawArrays(gl.TRIANGLES, 0, 6);
