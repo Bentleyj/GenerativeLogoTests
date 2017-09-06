@@ -12,13 +12,31 @@
 <!-- <image if="logo" src="OxEGen_logo-06.png" style="position: absolute; width: 190px;     padding-top: 140px;
     padding-left: 105px;"> -->
  		<canvas id="glscreen" width="400" height="400"></canvas>
- 		<p>Line Width</p>
+ 		<p>Color</p>
+ 		<label>Background</label>
+ 		<input type="color" id="bg" value="#ff0000">
+ 		<p></p>
  		<label>1</label>
- 		<input type="number" id="lineWidth1" value="5.0">
+ 		<input type="color" id="col1" value="#ff0000">
  		<label>2</label>
- 		<input type="number" id="lineWidth2" value="5.0">
+ 		<input type="color" id="col2" value="#ff0000">
  		<label>3</label>
- 		<input type="number" id="lineWidth3" value="5.0">
+ 		<input type="color" id="col3" value="#ff0000">
+ 		<label>4</label>
+ 		<input type="color" id="col4" value="#ff0000">
+ 		<label>5</label>
+ 		<input type="color" id="col5" value="#ff0000">
+ 		<p></p>
+ 		<label>6</label>
+ 		<input type="color" id="col6" value="#ff0000">
+ 		<label>7</label>
+ 		<input type="color" id="col7" value="#ff0000">
+ 		<label>8</label>
+ 		<input type="color" id="col8" value="#ff0000">
+ 		<label>9</label>
+ 		<input type="color" id="col9" value="#ff0000">
+ 		<label>10</label>
+ 		<input type="color" id="col10" value="#ff0000">
  		<p></p>
  		<button onclick="randomizeValues()">Randomize Parameters</button>
  		<button onclick="importCanvas()">Save Image</button>
@@ -41,6 +59,7 @@
   		#endif
 
   		// Uniform for the resolution of the CANVAS! (not the screen) and normalized mouse position
+  		uniform vec3 u_background;
   		uniform vec2 u_points[10];
   		uniform vec3 u_colors[10];
   		void main() {
@@ -55,38 +74,17 @@
 
   			for(int i = 0; i < 10; i++) {
   				float d = distance(u_points[i], uv);
-  				float p = 1.0 - smoothstep(0.0, 0.5, d);
+  				float p = clamp(1.0 - smoothstep(0.0, 0.5, d), 0.0, 1.0);
   				percentages[i] = p;
   			}
 
-  			// if(dist > 0.5) {
-  			// 	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-  			// 	return;
-  			// }
-
-  			//Save out the mouse position (not really necessary but makes it cleaner imo)
-  			//vec2 mouse = u_mousePos.xy;
-
-  			//Two colors you want to use, will make this changeable later
-    		vec4 colTop = vec4(0.200, 0.600, 0.750, 1.0);
-    		vec4 colBot = vec4(0.900, 0.600, 0.600, 1.0);
-
     		//Calculate the background gradient along y using basic mix function
-    		vec4 background = vec4(0.75, 0.68, 0.05, 1.0);
+    		vec4 background = vec4(u_background, 1.0);
     		for(int i = 0; i < 10; i++) {
     			background.rgb = mix(background.rgb, u_colors[i], percentages[i]);
     		}
 
     		background = background + smoothstep(0.44, 0.45, dist);
-
-        	//calculate distance to the mouse
-    		//float xDiff = mouse.x - uv.x;
-    		//float yDiff = mouse.y - uv.y;
-
-    		//float dst = sqrt(xDiff * xDiff + yDiff * yDiff) * 1.5;
-
-    		//Find the mouse color by sampling the background gradient
-    		//vec4 mouseCol = colTop * mouse.y + colBot * (1.0 - mouse.y);
     
 			gl_FragColor = background;
 		}
@@ -114,7 +112,8 @@
 
 		var velocities = getRandomArray(-0.002, 0.002, 20);
 		var points = getRandomArray(0.0, 1.0, 20);
-		var colors = setColors();
+		var colors = new Array();
+		var background = new Array();
 
 		gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
@@ -156,49 +155,13 @@
     		return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
 		}
 
-		function setColors() {
-			var colors = new Array();
-			colors[0] = 0.75;
-			colors[1] = 0.68;
-			colors[2] = 0.05;
-
-			colors[3] = 0.75;
-			colors[4] = 0.72;
-			colors[5] = 0.03;
-
-			colors[6] = 1.0;
-			colors[7] = 0.96;
-			colors[8] = 0.02;
-
-			colors[9] = 0.93;
-			colors[10] = 0.99;
-			colors[11] = 0.75;
-
-			colors[12] = 0.89;
-			colors[13] = 0.95;
-			colors[14] = 0.01;
-
-			colors[15] = 0.75;
-			colors[16] = 0.68;
-			colors[17] = 0.05;
-
-			colors[18] = 0.75;
-			colors[19] = 0.72;
-			colors[20] = 0.03;
-
-			colors[21] = 1.0;
-			colors[22] = 0.96;
-			colors[23] = 0.02;
-
-			colors[24] = 0.93;
-			colors[25] = 0.99;
-			colors[26] = 0.75;
-
-			colors[27] = 0.89;
-			colors[28] = 0.95;
-			colors[29] = 0.01;
-
-			return colors;
+		function hexToRgb(hex) {
+		    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+		    return result ? {
+		        r: parseInt(result[1], 16),
+		        g: parseInt(result[2], 16),
+		        b: parseInt(result[3], 16)
+		    } : null;
 		}
 
 		function animatePoints(points, vels) {
@@ -216,13 +179,13 @@
 		}
 
 		function downloadURI(uri, name) {
-		  var link = document.createElement("a");
-		  link.download = name;
-		  link.href = uri;
-		  document.body.appendChild(link);
-		  link.click();
-		  document.body.removeChild(link);
-		  delete link;
+			var link = document.createElement("a");
+			link.download = name;
+			link.href = uri;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			delete link;
 		}
 
 		function importCanvas() {
@@ -238,29 +201,43 @@
 		}
 
 		function setParameters() {
-			// Line Widths
-			lineWidth1 = document.getElementById("lineWidth1").value;
-			lineWidth2 = document.getElementById("lineWidth2").value;
-			lineWidth3 = document.getElementById("lineWidth3").value;
+			var cols = new Array();
+			cols[0] = document.getElementById("col1").value;
+			cols[1] = document.getElementById("col2").value;
+			cols[2] = document.getElementById("col3").value;
+			cols[3] = document.getElementById("col4").value;
+			cols[4] = document.getElementById("col5").value;
+			cols[5] = document.getElementById("col6").value;
+			cols[6] = document.getElementById("col7").value;
+			cols[7] = document.getElementById("col8").value;
+			cols[8] = document.getElementById("col9").value;
+			cols[9] = document.getElementById("col10").value;
+			var j = 0;
+			for(var i = 0; i < cols.length; i++) {
+				colors[j  ] = hexToRgb(cols[i]).r / 255;
+				colors[j+1] = hexToRgb(cols[i]).g / 255;
+				colors[j+2] = hexToRgb(cols[i]).b / 255;
+				j+=3;
+			}
+			var bg = document.getElementById("bg").value;
+			background[0] = hexToRgb(bg).r / 255;
+			background[1] = hexToRgb(bg).g / 255;
+			background[2] = hexToRgb(bg).b / 255;
 		}
 
+		function getRandomColor() {
+			return '#'+'0123456789abcdef'.split('').map(function(v,i,a){
+  				return i>5 ? null : a[Math.floor(Math.random()*16)] }).join('');
+		}
 
 		function randomizeValues() {
-			// document.getElementById("lineWidth1").value = 1.0 + Math.random()*8.0;
-			// document.getElementById("lineWidth2").value = 1.0 + Math.random()*8.0;
-			// document.getElementById("lineWidth3").value = 1.0 + Math.random()*8.0;
-
-			// document.getElementById("amp1").value = 0.0 + Math.random()*20.0;
-			// document.getElementById("amp2").value = 0.0 + Math.random()*20.0;
-			// document.getElementById("amp3").value = 0.0 + Math.random()*20.0;
-
-			// var freq = 1.0 + Math.random()*14.0;
-			// document.getElementById("freq1").value = parseInt(2.0 + Math.random()*7.0);
-			// document.getElementById("freq2").value = parseInt(2.0 + Math.random()*7.0);
-			// document.getElementById("freq3").value = parseInt(2.0 + Math.random()*7.0);
+			for(var i = 1; i < 11; i++) {
+				document.getElementById("col" + i.toString()).value = getRandomColor();
+			}
 		}
 
 		function animate() {
+			setParameters();
 			animatePoints(points, velocities);
 			//clear the buffer
 			gl.clearColor(1.0, 1.0, 1.0, 1.0);
@@ -273,13 +250,13 @@
 
 			//set fragment shader uniform
 			var pointsLoc = gl.getUniformLocation(program, "u_points");
-			//var mouseX = 0.5;
-			//var mouseY = 0.5;
-			//mouseY = 1.0 - mouseY; // flip mouse y because it comes in upside down for the shader coordinate space.
 			gl.uniform2fv(pointsLoc, points);
 
 			var colorsLoc = gl.getUniformLocation(program, "u_colors");
 			gl.uniform3fv(colorsLoc, colors);
+
+			var backgroundLoc = gl.getUniformLocation(program, "u_background");
+			gl.uniform3fv(backgroundLoc, background);
 
 			//draw the triangles with the shaders!
 			gl.drawArrays(gl.TRIANGLES, 0, 6);
