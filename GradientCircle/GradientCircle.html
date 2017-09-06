@@ -12,13 +12,17 @@
 <!-- <image if="logo" src="OxEGen_logo-06.png" style="position: absolute; width: 190px;     padding-top: 140px;
     padding-left: 105px;"> -->
  		<canvas id="glscreen" width="400" height="400"></canvas>
- 		<p>Line Width</p>
+ 		<p>Color</p>
  		<label>1</label>
- 		<input type="number" id="lineWidth1" value="5.0">
+ 		<input type="color" id="col1" value="#369292">
  		<label>2</label>
- 		<input type="number" id="lineWidth2" value="5.0">
+ 		<input type="color" id="col2" value="#2e4852">
  		<label>3</label>
- 		<input type="number" id="lineWidth3" value="5.0">
+ 		<input type="color" id="col3" value="#0accca">
+ 		 <label>4</label>
+ 		<input type="color" id="col4" value="#0accca">
+ 		 <label>5</label>
+ 		<input type="color" id="col5" value="#0accca">
  		<p></p>
  		<button onclick="randomizeValues()">Randomize Parameters</button>
  		<button onclick="importCanvas()">Save Image</button>
@@ -144,6 +148,8 @@
 		gl.linkProgram(program);	
 		gl.useProgram(program);
 
+		setParameters();
+
 		function getRandomArray(low, high, size) {
 			var points = new Array();
 			for(var i = 0; i < size; i++) {
@@ -154,6 +160,15 @@
 
 		function map_range(value, low1, high1, low2, high2) {
     		return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
+		}
+
+		function hexToRgb(hex) {
+		    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+		    return result ? {
+		        r: parseInt(result[1], 16),
+		        g: parseInt(result[2], 16),
+		        b: parseInt(result[3], 16)
+		    } : null;
 		}
 
 		function setColors() {
@@ -201,6 +216,8 @@
 			return colors;
 		}
 
+
+
 		function animatePoints(points, vels) {
 			for(var i = 0; i < points.length; i++) {
 				points[i] += vels[i];
@@ -238,10 +255,17 @@
 		}
 
 		function setParameters() {
-			// Line Widths
-			lineWidth1 = document.getElementById("lineWidth1").value;
-			lineWidth2 = document.getElementById("lineWidth2").value;
-			lineWidth3 = document.getElementById("lineWidth3").value;
+			var cols = new Array();
+			cols[0] = document.getElementById("col1").value;
+			cols[1] = document.getElementById("col2").value;
+			cols[2] = document.getElementById("col3").value;
+			cols[3] = document.getElementById("col4").value;
+			cols[4] = document.getElementById("col5").value;
+			for(var i = 0; i < cols.length; i+=3) {
+				colors[i] = hexToRgb(cols[i]).r;
+				colors[i+1] = hexToRgb(cols[i]).g;
+				colors[i+2] = hexToRgb(cols[i]).b;
+			}
 		}
 
 
