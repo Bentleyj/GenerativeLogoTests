@@ -225,6 +225,17 @@
 			background[2] = hexToRgb(bg).b / 255;
 		}
 
+		function getRandomColor() {
+			return '#'+'0123456789abcdef'.split('').map(function(v,i,a){
+  				return i>5 ? null : a[Math.floor(Math.random()*16)] }).join('');
+		}
+
+		function randomizeValues() {
+			for(var i = 1; i < 11; i++) {
+				document.getElementById("col" + i.toString()).value = getRandomColor();
+			}
+		}
+
 		function animate() {
 			setParameters();
 			animatePoints(points, velocities);
