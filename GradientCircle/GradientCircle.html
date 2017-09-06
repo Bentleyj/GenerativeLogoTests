@@ -19,10 +19,21 @@
  		<input type="color" id="col2" value="#2e4852">
  		<label>3</label>
  		<input type="color" id="col3" value="#0accca">
- 		 <label>4</label>
+ 		<label>4</label>
  		<input type="color" id="col4" value="#0accca">
- 		 <label>5</label>
+ 		<label>5</label>
  		<input type="color" id="col5" value="#0accca">
+ 		<p></p>
+ 		<label>6</label>
+ 		<input type="color" id="col6" value="#369292">
+ 		<label>7</label>
+ 		<input type="color" id="col7" value="#2e4852">
+ 		<label>8</label>
+ 		<input type="color" id="col8" value="#0accca">
+ 		<label>9</label>
+ 		<input type="color" id="col9" value="#0accca">
+ 		<label>10</label>
+ 		<input type="color" id="col10" value="#0accca">
  		<p></p>
  		<button onclick="randomizeValues()">Randomize Parameters</button>
  		<button onclick="importCanvas()">Save Image</button>
@@ -63,18 +74,6 @@
   				percentages[i] = p;
   			}
 
-  			// if(dist > 0.5) {
-  			// 	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-  			// 	return;
-  			// }
-
-  			//Save out the mouse position (not really necessary but makes it cleaner imo)
-  			//vec2 mouse = u_mousePos.xy;
-
-  			//Two colors you want to use, will make this changeable later
-    		vec4 colTop = vec4(0.200, 0.600, 0.750, 1.0);
-    		vec4 colBot = vec4(0.900, 0.600, 0.600, 1.0);
-
     		//Calculate the background gradient along y using basic mix function
     		vec4 background = vec4(0.75, 0.68, 0.05, 1.0);
     		for(int i = 0; i < 10; i++) {
@@ -82,15 +81,6 @@
     		}
 
     		background = background + smoothstep(0.44, 0.45, dist);
-
-        	//calculate distance to the mouse
-    		//float xDiff = mouse.x - uv.x;
-    		//float yDiff = mouse.y - uv.y;
-
-    		//float dst = sqrt(xDiff * xDiff + yDiff * yDiff) * 1.5;
-
-    		//Find the mouse color by sampling the background gradient
-    		//vec4 mouseCol = colTop * mouse.y + colBot * (1.0 - mouse.y);
     
 			gl_FragColor = background;
 		}
@@ -118,7 +108,7 @@
 
 		var velocities = getRandomArray(-0.002, 0.002, 20);
 		var points = getRandomArray(0.0, 1.0, 20);
-		var colors = setColors();
+		var colors = new Array();
 
 		gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
@@ -148,8 +138,6 @@
 		gl.linkProgram(program);	
 		gl.useProgram(program);
 
-		setParameters();
-
 		function getRandomArray(low, high, size) {
 			var points = new Array();
 			for(var i = 0; i < size; i++) {
@@ -171,53 +159,6 @@
 		    } : null;
 		}
 
-		function setColors() {
-			var colors = new Array();
-			colors[0] = 0.75;
-			colors[1] = 0.68;
-			colors[2] = 0.05;
-
-			colors[3] = 0.75;
-			colors[4] = 0.72;
-			colors[5] = 0.03;
-
-			colors[6] = 1.0;
-			colors[7] = 0.96;
-			colors[8] = 0.02;
-
-			colors[9] = 0.93;
-			colors[10] = 0.99;
-			colors[11] = 0.75;
-
-			colors[12] = 0.89;
-			colors[13] = 0.95;
-			colors[14] = 0.01;
-
-			colors[15] = 0.75;
-			colors[16] = 0.68;
-			colors[17] = 0.05;
-
-			colors[18] = 0.75;
-			colors[19] = 0.72;
-			colors[20] = 0.03;
-
-			colors[21] = 1.0;
-			colors[22] = 0.96;
-			colors[23] = 0.02;
-
-			colors[24] = 0.93;
-			colors[25] = 0.99;
-			colors[26] = 0.75;
-
-			colors[27] = 0.89;
-			colors[28] = 0.95;
-			colors[29] = 0.01;
-
-			return colors;
-		}
-
-
-
 		function animatePoints(points, vels) {
 			for(var i = 0; i < points.length; i++) {
 				points[i] += vels[i];
@@ -233,13 +174,13 @@
 		}
 
 		function downloadURI(uri, name) {
-		  var link = document.createElement("a");
-		  link.download = name;
-		  link.href = uri;
-		  document.body.appendChild(link);
-		  link.click();
-		  document.body.removeChild(link);
-		  delete link;
+			var link = document.createElement("a");
+			link.download = name;
+			link.href = uri;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			delete link;
 		}
 
 		function importCanvas() {
@@ -261,30 +202,20 @@
 			cols[2] = document.getElementById("col3").value;
 			cols[3] = document.getElementById("col4").value;
 			cols[4] = document.getElementById("col5").value;
+			cols[5] = document.getElementById("col6").value;
+			cols[6] = document.getElementById("col7").value;
+			cols[7] = document.getElementById("col8").value;
+			cols[8] = document.getElementById("col9").value;
+			cols[9] = document.getElementById("col10").value;
 			for(var i = 0; i < cols.length; i+=3) {
-				colors[i] = hexToRgb(cols[i]).r;
-				colors[i+1] = hexToRgb(cols[i]).g;
-				colors[i+2] = hexToRgb(cols[i]).b;
+				colors[i  ] = hexToRgb(cols[i]).r / 255;
+				colors[i+1] = hexToRgb(cols[i]).g / 255;
+				colors[i+2] = hexToRgb(cols[i]).b / 255;
 			}
 		}
 
-
-		function randomizeValues() {
-			// document.getElementById("lineWidth1").value = 1.0 + Math.random()*8.0;
-			// document.getElementById("lineWidth2").value = 1.0 + Math.random()*8.0;
-			// document.getElementById("lineWidth3").value = 1.0 + Math.random()*8.0;
-
-			// document.getElementById("amp1").value = 0.0 + Math.random()*20.0;
-			// document.getElementById("amp2").value = 0.0 + Math.random()*20.0;
-			// document.getElementById("amp3").value = 0.0 + Math.random()*20.0;
-
-			// var freq = 1.0 + Math.random()*14.0;
-			// document.getElementById("freq1").value = parseInt(2.0 + Math.random()*7.0);
-			// document.getElementById("freq2").value = parseInt(2.0 + Math.random()*7.0);
-			// document.getElementById("freq3").value = parseInt(2.0 + Math.random()*7.0);
-		}
-
 		function animate() {
+			setParameters();
 			animatePoints(points, velocities);
 			//clear the buffer
 			gl.clearColor(1.0, 1.0, 1.0, 1.0);
