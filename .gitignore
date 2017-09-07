@@ -1,1 +1,5 @@
 SVGs/
+
+# Ignore three.js files
+three.min.js
+three.js
