@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<script type="text/javascript" src="three.min.js"></script>
+<script type="text/javascript" src="three.js"></script>
 <style type="text/css">
 #world {
 	position: absolute;
-	width: 100%;
-	height: 100%;
+	width: 400px;
+	height: 400px;
 	overflow: hidden;
-	background: linear-gradient(#e4e0ba, #f7d9aa);
 }
 </style>
 </head>
@@ -39,7 +38,7 @@
 
 		createLights();
 
-		createSea();
+		createRing();
 
 		// createRing();
 
@@ -124,13 +123,13 @@
 	}
 
 	Sea = function() {
-		var geom = new THREE.CylinderGeometry(600, 600, 800, 40, 10);
+		var geom = new THREE.CylinderGeometry(50, 50, 50, 40, 10);
 
 		geom.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI/2));
 
-		var mat = new THREE.MeshPhongMaterial({
-			color:Colors.blue,
+		var mat = new THREE.MeshBasicMaterial({
 			transparent:true,
+			color:Colors.yellow1,
 			opacity:.6,
 			flatShading:THREE.FlatShading,
 		});
@@ -145,12 +144,40 @@
 	function createSea() {
 		sea = new Sea();
 
-		sea.mesh.position.y = -600;
+		sea.mesh.position.y = 100;
 		scene.add(sea.mesh);
 	}
 
+	Ring = function() {
+		var geom = new THREE.TorusGeometry(50, 10, 32, 100);
+
+		var mat = new THREE.MeshBasicMaterial({
+			//transparent:true,
+			color:Colors.yellow1,
+			//opacity:.6,
+			flatShading:THREE.FlatShading,
+		});
+
+		this.mesh = new THREE.Mesh(geom, mat);
+
+		this.mesh.recieveShadow = true;
+	}
+
+	var Ring;
+
+	function createRing() {
+		ring = new Ring();
+
+		ring.mesh.position.y = 100;
+		ring.mesh.rotation.y = Math.PI/2;
+		//ring.mesh.rotation.x = Math.PI/2;
+		scene.add(ring.mesh);
+	}
+
 	function loop() {
-		sea.mesh.rotation.z += 0.005;
+		ring.mesh.rotation.y += 0.005;
+		ring.mesh.rotation.x += 0.005;
+		ring.mesh.rotation.z += 0.005;
 
 		renderer.render(scene, camera);
 
