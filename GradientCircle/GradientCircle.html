@@ -38,9 +38,12 @@
  		<label>10</label>
  		<input type="color" id="col10" value="#d3b358">
  		<p></p>
+ 		<label>Lava Index</label>
+ 		<input type="range" min="0" max="10" step="1" id="lavaIndex" value="0"/>
+ 		<p></p>
  		<input type="file" id="texture" onchange="readURL(this)">
  		<p></p>
- 		<img id="blah" src="#" alt="your image" width="100px" height="100px"/>
+ 		<img id="bgTexture" src="#" alt="your image" width="100px" height="100px"/>
  		<p></p>
  		<button onclick="randomizeValues()">Randomize Parameters</button>
  		<p></p>
@@ -128,6 +131,7 @@
 		var colors = new Array();
 		var background = new Array();
 		var texture;
+		var lavaLampIndex;
 
 		gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
@@ -202,7 +206,7 @@
 				var reader = new FileReader();
 
 		        reader.onload = function (e) {
-		            document.getElementById('blah').setAttribute('src', e.target.result);
+		            document.getElementById('bgTexture').setAttribute('src', e.target.result);
 		           	texture = loadTexture(gl,  e.target.result);
 		        }
 
@@ -267,9 +271,17 @@
 			cols[7] = document.getElementById("col8").value;
 			cols[8] = document.getElementById("col9").value;
 			cols[9] = document.getElementById("col10").value;
+			lavaLampIndex = document.getElementById("lavaIndex").valueAsNumber;
+
 			var j = 0;
-			for(var i = 0; i < cols.length; i++) {
-				colors[j  ] = hexToRgb(cols[i]).r / 255;
+			for(var i = 0; i < lavaLampIndex; i++) {
+				colors[j] = hexToRgb(cols[i]).r;
+				colors[j+1] = hexToRgb(cols[i]).g;
+				colors[j+2] = hexToRgb(cols[i]).b;
+				j+=3;
+			}
+			for(var i = lavaLampIndex; i < cols.length; i++) {
+				colors[j] = hexToRgb(cols[i]).r / 255;
 				colors[j+1] = hexToRgb(cols[i]).g / 255;
 				colors[j+2] = hexToRgb(cols[i]).b / 255;
 				j+=3;
