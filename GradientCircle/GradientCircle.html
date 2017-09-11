@@ -8,9 +8,9 @@
 </head>
 
 <body>
-<!-- <image if="logo" src="OxEGen_logo-06.png" style="position: absolute; width: 190px;     padding-top: 140px;
-    padding-left: 105px;"> -->
- 		<canvas id="glscreen" width="400" height="400"></canvas>
+ 		<img style="position: absolute; z-index: 2; width: 400px; height: 400px;" src="cutout-03.svg">
+ 		<canvas id="glscreen" width="400px" height="400px"></canvas>
+ 		<!-- <img src="C:\Users\Flowers\Desktop\cutout-03.svg/> -->
  		<p></p>
  		<label>Background</label>
  		<input type="color" id="bg" value="#f5f50a">
@@ -43,7 +43,6 @@
  		<img id="blah" src="#" alt="your image" width="100px" height="100px"/>
  		<p></p>
  		<button onclick="randomizeValues()">Randomize Parameters</button>
- 		<button onclick="importCanvas()">Save Image</button>
  		<p></p>
  		<script id="2d-vertex-shader" type="x-shader/x-vertex">
 			//Vertex Shader, just a pass=through, does nothing out of the ordinary
@@ -98,7 +97,7 @@
 
 	    		background += textureColor;
 
-	    		background = background + smoothstep(0.44, 0.45, dist);
+	    		//background = background + smoothstep(0.44, 0.45, dist);
 	    
 				gl_FragColor = background;
 			}
@@ -254,18 +253,6 @@
 			link.click();
 			document.body.removeChild(link);
 			delete link;
-		}
-
-		function importCanvas() {
-			var ctxS = new C2S(400, 400);
-
-			drawScene(ctxS);
-
-			var svg = ctxS.getSerializedSvg(true);
-
-			var svg = "data:image/svg+xml;charset=utf-8," + svg;
-
-			downloadURI(svg, "image.svg");
 		}
 
 		function setParameters() {
