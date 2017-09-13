@@ -14,15 +14,15 @@
  		<canvas id="glscreen" width="400" height="400"></canvas>
  		<p>Color</p>
  		<label>1</label>
- 		<input type="color" id="col1" value="#369292">
+ 		<input type="color" id="col1" value="#E2681E">
  		<label>2</label>
- 		<input type="color" id="col2" value="#2e4852">
+ 		<input type="color" id="col2" value="#EE9B0F">
  		<label>3</label>
- 		<input type="color" id="col3" value="#0accca">
+ 		<input type="color" id="col3" value="#1B5D43">
  		 <label>4</label>
- 		<input type="color" id="col4" value="#0accca">
+ 		<input type="color" id="col4" value="#E5C12B">
  		 <label>5</label>
- 		<input type="color" id="col5" value="#0accca">
+ 		<input type="color" id="col5" value="#FFDD728">
  		<p></p>
  		<button onclick="randomizeValues()">Randomize Parameters</button>
  		<button onclick="importCanvas()">Save Image</button>
@@ -285,6 +285,9 @@
 		}
 
 		function animate() {
+
+			setParameters();
+
 			animatePoints(points, velocities);
 			//clear the buffer
 			gl.clearColor(1.0, 1.0, 1.0, 1.0);
