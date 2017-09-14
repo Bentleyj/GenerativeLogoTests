@@ -13,9 +13,9 @@
     padding-left: 105px;">
  		<canvas id="glscreen" width="400" height="400"></canvas>
  		<p>Line Width</p>
- 		<input type="number" id="lineWidth1" value="5.0">
+ 		<input type="number" id="lineWidth" value="5.0">
  		<p>Color</p>
- 		<input type="color" id="col1" value="#369292">
+ 		<input type="color" id="col" value="#369292">
  		<p>Alpha</p>
  		<input type="number" id="alpha" value="1.0">
  		<p>
@@ -148,10 +148,10 @@
 		var numPoints = 500.0;
 		var rad = 100.0;
 		var speed = 0.015;
-		var col1;
+		var col;
 		var col2;
 		var col3;
-		var lineWidth1 = 5.0;
+		var lineWidth = 5.0;
 		var lineWidth2 = 5.0;
 		var lineWidth3 = 5.0;
 		var fill = false;
@@ -201,19 +201,19 @@
 		}
 
 		function drawScene(ctx) {
-			ctx.strokeStyle = col1;
-			ctx.fillStyle = col1;
-			ctx.lineWidth = lineWidth1;
+			ctx.strokeStyle = col;
+			ctx.fillStyle = col;
+			ctx.lineWidth = lineWidth;
 			console.log(offset);
 			drawCircle(ctx, points1, (canvas.width/2) + Math.floor(offset), canvas.height/2 - Math.floor(offset));
 		}
 
 		function setParameters() {
 			// Line Widths
-			lineWidth1 = document.getElementById("lineWidth1").value;
+			lineWidth = document.getElementById("lineWidth").value;
 
 			// Colors
-			col1 = document.getElementById("col1").value;
+			col = document.getElementById("col").value;
 
 			alpha = document.getElementById("alpha").value;
 
@@ -222,7 +222,7 @@
 
 
 		function randomizeValues() {
-			document.getElementById("lineWidth1").value = 1.0 + Math.random()*8.0;
+			document.getElementById("lineWidth").value = 1.0 + Math.random()*8.0;
 		}
 
 		function animate() {
