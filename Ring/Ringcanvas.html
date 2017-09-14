@@ -13,37 +13,9 @@
     padding-left: 105px;">
  		<canvas id="glscreen" width="400" height="400"></canvas>
  		<p>Line Width</p>
- 		<label>1</label>
  		<input type="number" id="lineWidth1" value="5.0">
- 		<label>2</label>
- 		<input type="number" id="lineWidth2" value="5.0">
- 		<label>3</label>
- 		<input type="number" id="lineWidth3" value="5.0">
- 		<p>Amplitude</p>
- 		<label>1</label>
- 		<input type="number" id="amp1" value="7.0">
- 		<label>2</label>
- 		<input type="number" id="amp2" value="7.0">
- 		<label>3</label>
- 		<input type="number" id="amp3" value="7.0">
- 		<p>Frequency</p>
- 		<label>1</label>
- 		<input type="number" id="freq1" value="7.0">
- 		<label>2</label>
- 		<input type="number" id="freq2" value="7.0"> 		
- 		<label>3</label>
- 		<input type="number" id="freq3" value="7.0">
- 		<p>Cohesion</p>
- 		<input type="number" id="cohesion" value="-7.0">
- 		<p>Offset</p>
- 		<input type="number" id="offset" value="0.0">
  		<p>Color</p>
- 		<label>1</label>
  		<input type="color" id="col1" value="#369292">
- 		<label>2</label>
- 		<input type="color" id="col2" value="#2e4852">
- 		<label>3</label>
- 		<input type="color" id="col3" value="#0accca">
  		<p>Alpha</p>
  		<input type="number" id="alpha" value="1.0">
  		<p>
@@ -234,60 +206,23 @@
 			ctx.lineWidth = lineWidth1;
 			console.log(offset);
 			drawCircle(ctx, points1, (canvas.width/2) + Math.floor(offset), canvas.height/2 - Math.floor(offset));
-			ctx.strokeStyle = col2;
-			ctx.fillStyle = col2;
-			ctx.lineWidth = lineWidth2;
-			drawCircle(ctx, points2, canvas.width/2, canvas.height/2 + Math.floor(offset));
-			ctx.strokeStyle = col3;
-			ctx.fillStyle = col3;
-			ctx.lineWidth = lineWidth3;
-			drawCircle(ctx, points3, canvas.width/2 - Math.floor(offset), canvas.height/2 - Math.floor(offset));
 		}
 
 		function setParameters() {
 			// Line Widths
 			lineWidth1 = document.getElementById("lineWidth1").value;
-			lineWidth2 = document.getElementById("lineWidth2").value;
-			lineWidth3 = document.getElementById("lineWidth3").value;
-
-			// Amplitudes
-			amp1 = document.getElementById("amp1").value;
-			amp2 = document.getElementById("amp2").value;
-			amp3 = document.getElementById("amp3").value;
-
-			// Frequencies
-			freq1 = document.getElementById("freq1").value;
-			freq2 = document.getElementById("freq2").value;
-			freq3 = document.getElementById("freq3").value;
 
 			// Colors
 			col1 = document.getElementById("col1").value;
-			col2 = document.getElementById("col2").value;
-			col3 = document.getElementById("col3").value;
 
 			alpha = document.getElementById("alpha").value;
 
-			fill = document.getElementById("fill").checked;
-
-			cohesion = document.getElementById("cohesion").value;
-
-			offset = document.getElementById("offset").value;
+			fill = document.getElementById("fill").checked;;
 		}
 
 
 		function randomizeValues() {
 			document.getElementById("lineWidth1").value = 1.0 + Math.random()*8.0;
-			document.getElementById("lineWidth2").value = 1.0 + Math.random()*8.0;
-			document.getElementById("lineWidth3").value = 1.0 + Math.random()*8.0;
-
-			document.getElementById("amp1").value = 0.0 + Math.random()*20.0;
-			document.getElementById("amp2").value = 0.0 + Math.random()*20.0;
-			document.getElementById("amp3").value = 0.0 + Math.random()*20.0;
-
-			var freq = 1.0 + Math.random()*14.0;
-			document.getElementById("freq1").value = parseInt(2.0 + Math.random()*7.0);
-			document.getElementById("freq2").value = parseInt(2.0 + Math.random()*7.0);
-			document.getElementById("freq3").value = parseInt(2.0 + Math.random()*7.0);
 		}
 
 		function animate() {
@@ -298,9 +233,6 @@
 			setParameters();
 			phase1 += speed;
 			ctx.globalAlpha = alpha;
-			points1 = wobbleArc(cPoints1, amp1, freq1, phase1, angleFacing, cohesion);
-			points2 = wobbleArc(cPoints2, amp2, freq2, phase2, angleFacing, cohesion);
-			points3 = wobbleArc(cPoints3, amp3, freq3, phase3, angleFacing, cohesion);
 
 			drawScene(ctx);
 
