@@ -9,8 +9,6 @@
 </head>
 
 <body>
-<image if="logo" src="OxEGen_logo-06.png" style="position: absolute; width: 190px;     padding-top: 140px;
-    padding-left: 105px;">
  		<canvas id="glscreen" width="400" height="400"></canvas>
  		<p>Line Width</p>
  		<input type="number" id="lineWidth" value="5.0">
@@ -136,38 +134,19 @@
 			downloadURI(svg, "image.svg");
 		}
 
-		var phase1 = 0.0;
-		var phase2 = -PI/2;
-		var phase3 = PI/2;
-		var amp1 = 5.0;
-		var amp2 = 5.0;
-		var amp3 = 5.0;
-		var freq1 = 7.0;
-		var freq2 = 7.0;
-		var freq3 = 7.0;
 		var numPoints = 500.0;
 		var rad = 100.0;
 		var speed = 0.015;
 		var col;
-		var col2;
-		var col3;
 		var lineWidth = 5.0;
-		var lineWidth2 = 5.0;
-		var lineWidth3 = 5.0;
 		var fill = false;
 		var alpha = 0.5;
-		var cohesion = -1.0;
-		var offset = 1.0;
 
 		var angleFacing = 0.0;
 
-		var cPoints1 = getCirclePoints(rad, numPoints);
-		var cPoints2 = getCirclePoints(rad - ctx.lineWidth*0.8, numPoints);
-		var cPoints3 = getCirclePoints(rad - ctx.lineWidth*1.5, numPoints);
+		var cPoints = getCirclePoints(rad, numPoints);
 
-		var points1 = cPoints1;
-		var points2 = cPoints2;
-		var points3 = cPoints3;
+		var points = cPoints;
 
 		function drawCircle(ctx, points, centerX, centerY) {
 			points = convertPointsToCart(points);
@@ -204,8 +183,7 @@
 			ctx.strokeStyle = col;
 			ctx.fillStyle = col;
 			ctx.lineWidth = lineWidth;
-			console.log(offset);
-			drawCircle(ctx, points1, (canvas.width/2) + Math.floor(offset), canvas.height/2 - Math.floor(offset));
+			drawCircle(ctx, points, (canvas.width/2), canvas.height/2);
 		}
 
 		function setParameters() {
@@ -231,7 +209,6 @@
 			angleFacing += speed;
 			angleFacing %= 2*PI;
 			setParameters();
-			phase1 += speed;
 			ctx.globalAlpha = alpha;
 
 			drawScene(ctx);
