@@ -8,9 +8,11 @@
 </head>
 
 <body>
-<!--  		<img style="position: absolute; z-index: 2; width: 400px; height: 400px;" src="cutout-03.svg"> -->
- 		<canvas id="glscreen" width="400px" height="400px"></canvas>
- 		<!-- <img src="C:\Users\Flowers\Desktop\cutout-03.svg/> -->
+	<div style="padding-left: 200px">
+ 		<img style="position: absolute; z-index: 1; width: 600px" src="GoldenCircleCutout.svg">
+ 		<canvas id="glscreen" width="600px" height="600px"></canvas>
+ 	</div>
+ 		<div style="position: relative; padding-top: 200px">
  		<p></p>
  		<label>Background</label>
  		<input type="color" id="bg" value="#f5f50a">
@@ -47,6 +49,7 @@
  		<p></p>
  		<button onclick="randomizeValues()">Randomize Parameters</button>
  		<p></p>
+ 		</div>
  		<script id="2d-vertex-shader" type="x-shader/x-vertex">
 			//Vertex Shader, just a pass=through, does nothing out of the ordinary
 			attribute vec2 a_position;
@@ -72,7 +75,7 @@
 
 	  		void main() {
 	  			//Normalize the frag coord to [0, 1]
-	  			vec2 uv = gl_FragCoord.xy / vec2(400.0, 400.0);
+	  			vec2 uv = gl_FragCoord.xy / vec2(600.0, 600.0);
 	  			uv.y = 1.0 - uv.y;
 
 	  			vec2 cPos = vec2(0.5, 0.5);
@@ -100,7 +103,7 @@
 
 	    		background += textureColor;
 
-	    		background = background + smoothstep(0.44, 0.45, dist);
+	    		//background = background + smoothstep(0.44, 0.45, dist);
 	    
 				gl_FragColor = background;
 			}
