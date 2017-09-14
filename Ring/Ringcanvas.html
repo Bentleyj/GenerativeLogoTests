@@ -9,8 +9,8 @@
 </head>
 
 <body>
-<!-- <image if="logo" src="OxEGen_logo-06.png" style="position: absolute; width: 190px;     padding-top: 140px;
-    padding-left: 105px;"> -->
+<image if="logo" src="OxEGen_logo-06.png" style="position: absolute; width: 190px;     padding-top: 140px;
+    padding-left: 105px;">
  		<canvas id="glscreen" width="400" height="400"></canvas>
  		<p>Line Width</p>
  		<label>1</label>
@@ -174,7 +174,7 @@
 		var freq2 = 7.0;
 		var freq3 = 7.0;
 		var numPoints = 500.0;
-		var rad = 300.0;
+		var rad = 100.0;
 		var speed = 0.015;
 		var col1;
 		var col2;
@@ -232,6 +232,7 @@
 			ctx.strokeStyle = col1;
 			ctx.fillStyle = col1;
 			ctx.lineWidth = lineWidth1;
+			console.log(offset);
 			drawCircle(ctx, points1, (canvas.width/2) + Math.floor(offset), canvas.height/2 - Math.floor(offset));
 			ctx.strokeStyle = col2;
 			ctx.fillStyle = col2;
