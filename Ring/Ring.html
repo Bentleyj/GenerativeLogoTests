@@ -122,36 +122,10 @@
 		scene.add(shadowLight);
 	}
 
-	Sea = function() {
-		var geom = new THREE.CylinderGeometry(50, 50, 50, 40, 10);
-
-		geom.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI/2));
-
-		var mat = new THREE.MeshBasicMaterial({
-			transparent:true,
-			color:Colors.yellow1,
-			opacity:.6,
-			flatShading:THREE.FlatShading,
-		});
-
-		this.mesh = new THREE.Mesh(geom, mat);
-
-		this.mesh.recieveShadow = true;
-	}
-
-	var Sea;
-
-	function createSea() {
-		sea = new Sea();
-
-		sea.mesh.position.y = 100;
-		scene.add(sea.mesh);
-	}
-
 	Ring = function() {
 		var geom = new THREE.TorusGeometry(50, 10, 32, 100);
 
-		var mat = new THREE.MeshBasicMaterial({
+		var mat = new THREE.MeshPhongMaterial({
 			//transparent:true,
 			color:Colors.yellow1,
 			//opacity:.6,
