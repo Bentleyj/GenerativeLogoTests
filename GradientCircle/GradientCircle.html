@@ -8,7 +8,7 @@
 </head>
 
 <body>
- 		<img style="position: absolute; z-index: 2; width: 400px; height: 400px;" src="cutout-03.svg">
+<!--  		<img style="position: absolute; z-index: 2; width: 400px; height: 400px;" src="cutout-03.svg"> -->
  		<canvas id="glscreen" width="400px" height="400px"></canvas>
  		<!-- <img src="C:\Users\Flowers\Desktop\cutout-03.svg/> -->
  		<p></p>
@@ -97,7 +97,7 @@
 
 	    		background += textureColor;
 
-	    		//background = background + smoothstep(0.44, 0.45, dist);
+	    		background = background + smoothstep(0.44, 0.45, dist);
 	    
 				gl_FragColor = background;
 			}
