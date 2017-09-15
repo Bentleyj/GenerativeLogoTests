@@ -21,6 +21,9 @@
  		<label>1</label>
  		<input type="color" id="col" value="#EA560D">
  		<p></p>
+ 		<label>Dot spacing</label>
+ 		<input type="range" min="1.0" max="32.0" id="dotSpacing" value = "1.0">
+ 		<p></p>
  		<label>Dot Size</label>
  		<input type="range" min="20" max="500" id="distFactor" value = "75">
  		<button onclick="randomizeValues()">Randomize Parameters</button>
@@ -48,6 +51,7 @@
 	  		uniform float u_distFactor;
 	  		uniform vec3 u_color;
 	  		uniform vec2 u_point;
+	  		uniform float u_dotSpacing;
 
 	  		void main() {
 	  			//Normalize the frag coord to [0, 1]
@@ -55,7 +59,7 @@
 
 	  			vec2 uv = gl_FragCoord.xy / res;
 	  			//uv.y = 1.0 - uv.y;
-	  			vec2 center = (floor(gl_FragCoord.xy/16.0)*16.0 + 8.0) / res;
+	  			vec2 center = (floor(gl_FragCoord.xy/u_dotSpacing)*u_dotSpacing + u_dotSpacing/2.0) / res;
 
 	  			float distToPoint = distance(uv, u_point);
 
@@ -120,6 +124,8 @@
 		vel[0] = 0.002;
 		vel[1] = 0.001;
 
+		var dotSpacing;
+
 		gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
 		//define the shader variables that we'll need
@@ -181,6 +187,8 @@
 			background[2] = hexToRgb(bg).b / 255;
 
 			distFactor = document.getElementById("distFactor").valueAsNumber;
+
+			dotSpacing = document.getElementById("dotSpacing").valueAsNumber;
 		}
 
 		function getRandomColor() {
@@ -224,6 +232,9 @@
 			//set fragment shader uniform
 			var distFactorLoc = gl.getUniformLocation(program, "u_distFactor");
 			gl.uniform1f(distFactorLoc, distFactor);
+
+			var dotSpacingLoc = gl.getUniformLocation(program, "u_dotSpacing");
+			gl.uniform1f(dotSpacingLoc, dotSpacing);
 
 			var pointLoc = gl.getUniformLocation(program, "u_point");
 			gl.uniform2f(pointLoc, point[0], point[1]);
