@@ -133,7 +133,7 @@
 		var points = getRandomArray(0.0, 1.0, 20);
 		var colors = new Array();
 		var background = new Array();
-		var texture;
+		var texture = defaultTexture(gl);;
 		var lavaLampIndex;
 
 		gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -164,6 +164,23 @@
 		gl.linkProgram(program);	
 		gl.useProgram(program);
 
+		function defaultTexture(gl) {
+			const texture = gl.createTexture();
+			gl.bindTexture(gl.TEXTURE_2D, texture);
+
+			const level = 0;
+			const internalFormat = gl.RGBA;
+			const width = 1;
+			const height = 1;
+			const border = 0;
+			const srcFormat = gl.RGBA;
+			const srcType = gl.UNSIGNED_BYTE;
+			const pixel = new Uint8Array([0, 0, 0, 0]);  // opaque blue
+			gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, srcFormat, srcType, pixel);
+
+			return texture;
+		}
+
 		function loadTexture(gl, url) {
 			const texture = gl.createTexture();
 			gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -175,7 +192,7 @@
 			const border = 0;
 			const srcFormat = gl.RGBA;
 			const srcType = gl.UNSIGNED_BYTE;
-			const pixel = new Uint8Array([0, 0, 255, 255]);  // opaque blue
+			const pixel = new Uint8Array([0, 0, 0, 255]);  // opaque blue
 			gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, srcFormat, srcType, pixel);
 
 			const image = new Image();
@@ -210,7 +227,7 @@
 
 		        reader.onload = function (e) {
 		            document.getElementById('bgTexture').setAttribute('src', e.target.result);
-		           	texture = loadTexture(gl,  e.target.result);
+		           	texture = loadTexture(gl, e.target.result);
 		        }
 
 		        reader.readAsDataURL(input.files[0]);
