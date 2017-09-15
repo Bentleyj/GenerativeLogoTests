@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<script type='text/javascript' src='http://hellicarstudio.com/wp-includes/js/jquery/jquery.js?ver=1.12.4'></script>
+<script type='text/javascript' src='http://hellicarstudio.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=1.4.1'></script>
+</head>
+
+<body>
+	<div style="padding-left: 200px">
+ 		<img style="position: absolute; z-index: 1; width: 600px" src="Ring.svg">
+ 		<canvas id="glscreen" width="600px" height="600px"></canvas>
+ 	</div>
+ 		<div style="position: relative; padding-top: 200px">
+ 		<p></p>
+ 		<label>Background</label>
+ 		<input type="color" id="bg" value="#f5f50a">
+ 		<p></p>
+ 		<p>Colors</p>
+ 		<label>1</label>
+ 		<input type="color" id="col1" value="#c9c728">
+ 		<label>2</label>
+ 		<input type="color" id="col2" value="#faf150">
+ 		<label>3</label>
+ 		<input type="color" id="col3" value="#b9c925">
+ 		<label>4</label>
+ 		<input type="color" id="col4" value="#aa800f">
+ 		<label>5</label>
+ 		<input type="color" id="col5" value="#dff233">
+ 		<p></p>
+ 		<label>6</label>
+ 		<input type="color" id="col6" value="#f1e607">
+ 		<label>7</label>
+ 		<input type="color" id="col7" value="#ece235">
+ 		<label>8</label>
+ 		<input type="color" id="col8" value="#b8b021">
+ 		<label>9</label>
+ 		<input type="color" id="col9" value="#fbde98">
+ 		<label>10</label>
+ 		<input type="color" id="col10" value="#d3b358">
+ 		<p></p>
+ 		<label>Lava Index</label>
+ 		<input type="range" min="0" max="10" step="1" id="lavaIndex" value="0"/>
+ 		<p></p>
+ 		<input type="file" id="texture" onchange="readURL(this)">
+ 		<p></p>
+ 		<img id="bgTexture" src="#" alt="your image" width="100px" height="100px"/>
+ 		<p></p>
+ 		<button onclick="randomizeValues()">Randomize Parameters</button>
+ 		<p></p>
+ 		</div>
+ 		<script id="2d-vertex-shader" type="x-shader/x-vertex">
+			//Vertex Shader, just a pass=through, does nothing out of the ordinary
+			attribute vec2 a_position;
+	  		void main() {
+	    		gl_Position = vec4(a_position, 0, 1);
+	  		}
+		</script>
+
+ 		<script id="2d-fragment-shader" type="x-shader/x-fragment">
+			//Fragment shader, does all the work!
+			// Here we initialize the float precision (this really should bea  default thing, took me like an hour to figure out)
+			#ifdef GL_FRAGMENT_PRECISION_HIGH
+				precision highp float;
+	  		#else
+	    		precision mediump float;
+	  		#endif
+
+	  		// Uniform for the resolution of the CANVAS! (not the screen) and normalized mouse position
+	  		uniform vec3 u_background;
+	  		uniform vec2 u_points[10];
+	  		uniform vec3 u_colors[10];
+	  		uniform sampler2D u_texture;
+
+	  		void main() {
+	  			//Normalize the frag coord to [0, 1]
+	  			vec2 uv = gl_FragCoord.xy / vec2(600.0, 600.0);
+	  			uv.y = 1.0 - uv.y;
+
+	  			vec2 cPos = vec2(0.5, 0.5);
+
+	  			float dist = distance(cPos, uv);
+
+	  			float percentages[10];
+
+	  			for(int i = 0; i < 10; i++) {
+	  				float d = distance(u_points[i], uv);
+	  				float p = clamp(1.0 - smoothstep(0.0, 0.5, d), 0.0, 1.0);
+	  				percentages[i] = p;
+	  			}
+
+	    		//Calculate the background gradient along y using basic mix function
+	    		vec4 background = vec4(u_background, 1.0);
+	    		for(int i = 0; i < 10; i++) {
+	    			background.rgb = mix(background.rgb, u_colors[i], percentages[i]);
+	    		}
+
+	    		vec4 textureColor = texture2D(u_texture, uv);
+	    		float grayScaleCol = (textureColor.r + textureColor.g + textureColor.b)/3.0;
+	    		textureColor.rgb = vec3(grayScaleCol);
+	    		textureColor.rgb = (1.0 - textureColor.rgb)*0.5;
+
+	    		background += textureColor;
+
+	    		//background = background + smoothstep(0.44, 0.45, dist);
+	    
+				gl_FragColor = background;
+			}
+		</script>
+
+ 		<script>
+ 		// grab the canvas and the gl context
+		var canvas = document.getElementById('glscreen');
+		var gl = canvas.getContext('experimental-webgl');
+		var body = document.body;
+		var buffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+		gl.bufferData(
+			gl.ARRAY_BUFFER, 
+			new Float32Array([
+					-1.0, -1.0, 
+					1.0, -1.0, 
+					-1.0,  1.0, 
+					-1.0,  1.0, 
+					1.0, -1.0, 
+					1.0,  1.0]), 
+			gl.STATIC_DRAW
+		);
+
+		var velocities = getRandomArray(-0.002, 0.002, 20);
+		var points = getRandomArray(0.0, 1.0, 20);
+		var colors = new Array();
+		var background = new Array();
+		var texture = defaultTexture(gl);;
+		var lavaLampIndex;
+
+		gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+
+		//define the shader variables that we'll need
+		var shaderScript;
+		var shaderSource;
+		var vertexShader;
+		var fragmentShader;
+
+		// compile the vertex shader
+		shaderScript = document.getElementById("2d-vertex-shader");
+		shaderSource = shaderScript.text;
+		vertexShader = gl.createShader(gl.VERTEX_SHADER);
+		gl.shaderSource(vertexShader, shaderSource);
+		gl.compileShader(vertexShader);
+		
+		//compile the fragment shader
+		shaderScript   = document.getElementById("2d-fragment-shader");
+		shaderSource   = shaderScript.text;
+		fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+		gl.shaderSource(fragmentShader, shaderSource);
+		gl.compileShader(fragmentShader);
+
+		program = gl.createProgram();
+		gl.attachShader(program, vertexShader);
+		gl.attachShader(program, fragmentShader);
+		gl.linkProgram(program);	
+		gl.useProgram(program);
+
+		function defaultTexture(gl) {
+			const texture = gl.createTexture();
+			gl.bindTexture(gl.TEXTURE_2D, texture);
+
+			const level = 0;
+			const internalFormat = gl.RGBA;
+			const width = 1;
+			const height = 1;
+			const border = 0;
+			const srcFormat = gl.RGBA;
+			const srcType = gl.UNSIGNED_BYTE;
+			const pixel = new Uint8Array([255, 255, 255, 255]);  // opaque blue
+			gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, srcFormat, srcType, pixel);
+
+			return texture;
+		}
+
+		function loadTexture(gl, url) {
+			const texture = gl.createTexture();
+			gl.bindTexture(gl.TEXTURE_2D, texture);
+
+			const level = 0;
+			const internalFormat = gl.RGBA;
+			const width = 1;
+			const height = 1;
+			const border = 0;
+			const srcFormat = gl.RGBA;
+			const srcType = gl.UNSIGNED_BYTE;
+			const pixel = new Uint8Array([0, 0, 0, 255]);  // opaque blue
+			gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, srcFormat, srcType, pixel);
+
+			const image = new Image();
+		  	image.onload = function() {
+			    gl.bindTexture(gl.TEXTURE_2D, texture);
+			    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, image);
+
+			    if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+			    	// Yes, it's a power of 2. Generate mips.
+			       	gl.generateMipmap(gl.TEXTURE_2D);
+			    } else {
+			    	// No, it's not a power of 2. Turn of mips and set
+			       	// wrapping to clamp to edge
+			       	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			       	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			       	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			    }
+		  	};
+
+		  image.src = url;
+
+		  return texture;
+		}
+
+		function isPowerOf2(value) {
+			return (value & (value - 1)) == 0;
+		}
+
+		function readURL(input) {
+			if (input.files && input.files[0]) {
+				var reader = new FileReader();
+
+		        reader.onload = function (e) {
+		            document.getElementById('bgTexture').setAttribute('src', e.target.result);
+		           	texture = loadTexture(gl, e.target.result);
+		        }
+
+		        reader.readAsDataURL(input.files[0]);
+		    }
+		}
+
+		function getRandomArray(low, high, size) {
+			var points = new Array();
+			for(var i = 0; i < size; i++) {
+				points[i] = map_range(Math.random(), 0.0, 1.0, low, high);
+			}
+			return points;
+		}
+
+		function map_range(value, low1, high1, low2, high2) {
+    		return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
+		}
+
+		function hexToRgb(hex) {
+		    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+		    return result ? {
+		        r: parseInt(result[1], 16),
+		        g: parseInt(result[2], 16),
+		        b: parseInt(result[3], 16)
+		    } : null;
+		}
+
+		function animatePoints(points, vels) {
+			for(var i = 0; i < points.length; i++) {
+				points[i] += vels[i];
+				if(points[i] < 0) {
+					points[i] = 0;
+					vels[i] *= -1;
+				}
+				if(points[i] > 1) {
+					points[i] = 1;
+					vels[i] *= -1;
+				}
+			}
+		}
+
+		function downloadURI(uri, name) {
+			var link = document.createElement("a");
+			link.download = name;
+			link.href = uri;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			delete link;
+		}
+
+		function setParameters() {
+			var cols = new Array();
+			cols[0] = document.getElementById("col1").value;
+			cols[1] = document.getElementById("col2").value;
+			cols[2] = document.getElementById("col3").value;
+			cols[3] = document.getElementById("col4").value;
+			cols[4] = document.getElementById("col5").value;
+			cols[5] = document.getElementById("col6").value;
+			cols[6] = document.getElementById("col7").value;
+			cols[7] = document.getElementById("col8").value;
+			cols[8] = document.getElementById("col9").value;
+			cols[9] = document.getElementById("col10").value;
+			lavaLampIndex = document.getElementById("lavaIndex").valueAsNumber;
+
+			var j = 0;
+			for(var i = 0; i < lavaLampIndex; i++) {
+				colors[j] = hexToRgb(cols[i]).r;
+				colors[j+1] = hexToRgb(cols[i]).g;
+				colors[j+2] = hexToRgb(cols[i]).b;
+				j+=3;
+			}
+			for(var i = lavaLampIndex; i < cols.length; i++) {
+				colors[j] = hexToRgb(cols[i]).r / 255;
+				colors[j+1] = hexToRgb(cols[i]).g / 255;
+				colors[j+2] = hexToRgb(cols[i]).b / 255;
+				j+=3;
+			}
+			var bg = document.getElementById("bg").value;
+			background[0] = hexToRgb(bg).r / 255;
+			background[1] = hexToRgb(bg).g / 255;
+			background[2] = hexToRgb(bg).b / 255;
+		}
+
+		function getRandomColor() {
+			return '#'+'0123456789abcdef'.split('').map(function(v,i,a){
+  				return i>5 ? null : a[Math.floor(Math.random()*16)] }).join('');
+		}
+
+		function randomizeValues() {
+			for(var i = 1; i < 11; i++) {
+				document.getElementById("col" + i.toString()).value = getRandomColor();
+			}
+		}
+
+		function animate() {
+			setParameters();
+			animatePoints(points, velocities);
+			//clear the buffer
+			gl.clearColor(1.0, 1.0, 1.0, 1.0);
+			gl.clear(gl.COLOR_BUFFER_BIT);
+
+			// set vertex shader attributes
+			positionLocation = gl.getAttribLocation(program, "a_position");
+			gl.enableVertexAttribArray(positionLocation);
+			gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+			//set fragment shader uniform
+			var pointsLoc = gl.getUniformLocation(program, "u_points");
+			gl.uniform2fv(pointsLoc, points);
+
+			var colorsLoc = gl.getUniformLocation(program, "u_colors");
+			gl.uniform3fv(colorsLoc, colors);
+
+			var backgroundLoc = gl.getUniformLocation(program, "u_background");
+			gl.uniform3fv(backgroundLoc, background);
+
+			var textureLoc = gl.getUniformLocation(program, "u_texture");
+			gl.uniform1i(textureLoc, texture);
+
+			//draw the triangles with the shaders!
+			gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+			requestAnimationFrame(function() {
+				animate();
+			});
+		}
+
+		animate();
+	</script>
+</body>
+</html>
