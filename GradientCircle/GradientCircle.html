@@ -9,7 +9,7 @@
 
 <body>
 	<div style="padding-left: 200px">
- 		<img style="position: absolute; z-index: 1; width: 600px" src="Overlays/Ring.svg">
+ 		<img style="position: absolute; z-index: 1; width: 600px" src="Overlays/james-banana.png">
  		<canvas id="glscreen" width="600px" height="600px"></canvas>
  	</div>
  		<div style="position: relative; padding-top: 200px">
@@ -50,12 +50,8 @@
  		<button onclick="randomizeValues()">Randomize Parameters</button>
  		<p></p>
  		</div>
- 		<script id="2d-vertex-shader" type="x-shader/x-vertex">
-			//Vertex Shader, just a pass=through, does nothing out of the ordinary
-			attribute vec2 a_position;
-	  		void main() {
-	    		gl_Position = vec4(a_position, 0, 1);
-	  		}
+ 		<script id="2d-vertex-shader" type="x-shader/x-vertex" src="Vertex.glsl">
+
 		</script>
 
  		<script id="2d-fragment-shader" type="x-shader/x-fragment">
