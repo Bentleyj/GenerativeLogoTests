@@ -9,8 +9,19 @@
 </head>
 
 <body>
-<image if="logo" src="OxEGen_logo-06.png" style="position: absolute; width: 190px;     padding-top: 140px;
-    padding-left: 105px;">
+<image id="title" src="NeuroGenE_logo-06.png" style="
+    position: absolute;
+    width: 300px;
+    padding-top: 170px;
+    padding-left: 50px;
+    ">
+<image if="subtitle" src="NeuroGenE_logo-07.png" style="
+    position: absolute;
+    width: 300px;
+    padding-top: 320px;
+    padding-left: 50px;
+    
+    ">
  		<canvas id="glscreen" width="400" height="400"></canvas>
  		<p>Line Width</p>
  		<label>1</label>
@@ -229,6 +240,8 @@
 		}
 
 		function drawScene(ctx) {
+			// ctx.fillStyle = "blue";
+			// ctx.fillRect(0, 0, canvas.width, canvas.height);
 			ctx.strokeStyle = col1;
 			ctx.fillStyle = col1;
 			ctx.lineWidth = lineWidth1;
