@@ -9,7 +9,7 @@
 </head>
 
 <body>
-<image id="title" src="NeuroGenE_logo-06.png" style="
+<image id="title" src="NeuroGenE-06.png" style="
     position: absolute;
     width: 300px;
     padding-top: 170px;
@@ -185,7 +185,7 @@
 		var freq2 = 7.0;
 		var freq3 = 7.0;
 		var numPoints = 500.0;
-		var rad = 100.0;
+		var rad = 110.0;
 		var speed = 0.015;
 		var col1;
 		var col2;
@@ -198,6 +198,8 @@
 		var cohesion = -1.0;
 		var offset = 1.0;
 
+		var startAndStopAngles = [];
+
 		var angleFacing = 0.0;
 
 		var cPoints1 = getCirclePoints(rad, numPoints);
@@ -208,7 +210,8 @@
 		var points2 = cPoints2;
 		var points3 = cPoints3;
 
-		function drawCircle(ctx, points, centerX, centerY) {
+		function drawCircle(ctx, points, centerX, centerY, startBottom, stopBottom, startTop, stopTop){
+			pointsPol = points;
 			points = convertPointsToCart(points);
 			points = shiftPoints(points, centerX, centerY);
 			ctx.beginPath();
@@ -217,44 +220,96 @@
 			// 	ctx.lineTo(point[0], point[1]);
 			// 	ctx.lineTo(point[0], point[1]);
 			// });
-			for (i = 0; i < points.length - 2; i ++)
+			var shouldDraw = false;
+			var wasShouldDraw = false;
+			var endPoints = [];
+			for (var i = 0; i < points.length - 2; i ++)
 			{
-				var xc = (points[i][0] + points[i + 1][0]) / 2;
-			    var yc = (points[i][1] + points[i + 1][1]) / 2;
-			    ctx.quadraticCurveTo(points[i][0], points[i][1], xc, yc);
+				if(pointsPol[i][1] < startBottom || pointsPol[i][1] > stopTop) {
+					shouldDraw = false;
+				} else if (pointsPol[i][1] > stopBottom && pointsPol[i][1] < startTop) {
+					shouldDraw = false;
+				} else {
+					shouldDraw = true;
+				}
+				if(shouldDraw && !wasShouldDraw) {
+					var xc = points[i][0];
+				    var yc = points[i][1];
+				    var endPoint = [xc, yc];
+					endPoints.push(endPoint);
+				} else if(!shouldDraw && wasShouldDraw) {
+					var xc = points[i][0];
+				    var yc = points[i][1];
+				    var endPoint = [xc, yc];
+					endPoints.push(endPoint);
+				}
+
+				if(shouldDraw) {
+					var xc = (points[i][0] + points[i + 1][0]) / 2;
+				    var yc = (points[i][1] + points[i + 1][1]) / 2;
+				    //ctx.strokeStyle = "green";
+				    ctx.quadraticCurveTo(points[i][0], points[i][1], xc, yc);
+					// var xc = (points[i][0] + points[i + 1][0]) / 2;
+				 //    var yc = (points[i][1] + points[i + 1][1]) / 2;
+				 //    ctx.strokeStyle = "red";
+				 //    ctx.quadraticCurveTo(points[i][0], points[i][1], xc, yc);
+				} else {
+					ctx.moveTo(points[i][0], points[i][1]);
+				}
+				wasShouldDraw = shouldDraw;
 			}
 			// curve through the last two points
-			ctx.quadraticCurveTo(points[i][0], points[i][1], points[i+1][0],points[i+1][1]);
-			ctx.lineTo(points[0][0],points[0][1]);
-			var xc1 = (points[points.length-2][0] + points[points.length-1][0]) / 2;
-			var yc1 = (points[points.length-2][1] + points[points.length-1][1]) / 2;
-			var xc2 = (points[0][0] + points[2][0]) / 2;
-			var yc2 = (points[0][1] + points[2][1]) / 2;
-			ctx.moveTo(xc1,yc1);
-			ctx.quadraticCurveTo(xc1,yc1,xc2,yc2);
+			// ctx.quadraticCurveTo(points[i][0], points[i][1], points[i+1][0],points[i+1][1]);
+			// ctx.lineTo(points[0][0],points[0][1]);
+			// var xc1 = (points[points.length-2][0] + points[points.length-1][0]) / 2;
+			// var yc1 = (points[points.length-2][1] + points[points.length-1][1]) / 2;
+			// var xc2 = (points[0][0] + points[2][0]) / 2;
+			// var yc2 = (points[0][1] + points[2][1]) / 2;
+			// ctx.moveTo(xc1,yc1);
+			// ctx.quadraticCurveTo(xc1,yc1,xc2,yc2);
 
 			if(fill == true)
 				ctx.fill();
 			else
 				ctx.stroke();
+
+
+			for(var i = 0; i < endPoints.length; i++) {
+				ctx.beginPath();
+				ctx.arc(endPoints[i][0], endPoints[i][1], lineWidth1/2 - 0.2, 0, 2 * PI);
+				ctx.fill();
+			}
 		}
 
 		function drawScene(ctx) {
 			// ctx.fillStyle = "blue";
 			// ctx.fillRect(0, 0, canvas.width, canvas.height);
+			var gapWidth = 0.25;
+			var startBottom = gapWidth;
+			//console.log(startBottom);
+			var stopBottom = PI - gapWidth;
+			var startTop = PI + gapWidth;
+			var stopTop = 2*PI - gapWidth;
+
+			var alignmentCorrection = 0.0;
+			var alignmentDiff = 0.01;
+			//var startTop = 3.4;
 			ctx.strokeStyle = col1;
 			ctx.fillStyle = col1;
 			ctx.lineWidth = lineWidth1;
-			console.log(offset);
-			drawCircle(ctx, points1, (canvas.width/2) + Math.floor(offset), canvas.height/2 - Math.floor(offset));
+			drawCircle(ctx, points1, (canvas.width/2) + Math.floor(offset), canvas.height/2 - Math.floor(offset), startBottom + alignmentCorrection, stopBottom - alignmentCorrection, startTop + alignmentCorrection, stopTop - alignmentCorrection);
+
+			alignmentCorrection += alignmentDiff;
 			ctx.strokeStyle = col2;
 			ctx.fillStyle = col2;
 			ctx.lineWidth = lineWidth2;
-			drawCircle(ctx, points2, canvas.width/2, canvas.height/2 + Math.floor(offset));
+			drawCircle(ctx, points2, canvas.width/2, canvas.height/2 + Math.floor(offset), startBottom + alignmentCorrection, stopBottom - alignmentCorrection, startTop + alignmentCorrection, stopTop - alignmentCorrection);
+
 			ctx.strokeStyle = col3;
 			ctx.fillStyle = col3;
 			ctx.lineWidth = lineWidth3;
-			drawCircle(ctx, points3, canvas.width/2 - Math.floor(offset), canvas.height/2 - Math.floor(offset));
+			alignmentCorrection += alignmentDiff;
+			drawCircle(ctx, points3, canvas.width/2 - Math.floor(offset), canvas.height/2 - Math.floor(offset), startBottom + alignmentCorrection, stopBottom - alignmentCorrection, startTop + alignmentCorrection, stopTop - alignmentCorrection);
 		}
 
 		function setParameters() {
